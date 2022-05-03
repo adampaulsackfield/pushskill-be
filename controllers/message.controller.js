@@ -9,8 +9,13 @@ exports.getMessages = async (req, res) => {
 };
 
 exports.postMessage = async (req, res) => {
-	// const { message } = req.body;
-	const createMessage = await Message.create(req.body);
+	const { message } = req.body;
+	const newMsg = {
+		message: message,
+		senderId: req.user.id,
+		recipientId: req.user.id,
+	};
+	const createMessage = await Message.create(newMsg);
 
 	res.status(200).send(createMessage);
 };
