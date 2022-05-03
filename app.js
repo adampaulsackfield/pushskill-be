@@ -64,7 +64,7 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('disconnecting', () => {
-		console.log('User disconnectiong');
+		console.log('User disconnecting');
 		//? TODO - If we get the chance we could show a warning that they're disconnecting. Like a loading spinner and attempting to reconnect
 	});
 
