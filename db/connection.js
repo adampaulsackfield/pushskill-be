@@ -1,13 +1,12 @@
-const dotenv = require("dotenv");
-
+const dotenv = require('dotenv');
 dotenv.config();
 
-const { MongoClient } = require("mongodb");
+const mongoose = require('mongoose');
 
-MongoClient.connect(process.env.DB_URI, async (err, client) => {
-  const db = client.db();
-  const users = db.collection("users");
-  const results = await users.find().toArray();
-  console.log(results);
-  client.close();
-});
+const connectDB = () => {
+	return mongoose.connect(process.env.DB_URI).then(() => {
+		console.log('connected');
+	});
+};
+
+module.exports = connectDB;
