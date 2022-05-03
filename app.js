@@ -30,8 +30,8 @@ const io = new Server(server, {
 
 io.on('connection', (socket) => {
 	socket.on('join_room', (chatId) => {
-		//? TODO - This is where the room will be added to the ChatModel
-		//? TODO - chatId will become unique using UUID - generate here
+		// TODO - This is where the room will be added to the ChatModel
+		// TODO - chatId will become unique using UUID - generate here
 		// Chat Model
 		// chatId
 		// members []
@@ -41,9 +41,10 @@ io.on('connection', (socket) => {
 
 	socket.on('chat_message', (data) => {
 		const { chatId, senderId, recipientId, message, timestamps } = data;
-		//? TODO - This is where the message will be added to the MessageModel
-		//? TODO - roomName will become unique using UUID - generate here
+		// TODO - This is where the message will be added to the MessageModel
+		// TODO - roomName will become unique using UUID - generate here
 		// Message Model
+		// messageId
 		// chatId
 		// senderId
 		// recipientId
@@ -53,7 +54,7 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('list_rooms', () => {
-		//? TODO - Here is where we will query the DB to get the users existing rooms/chats
+		// TODO - Here is where we will query the DB to get the users existing rooms/chats
 		const rooms = Array.from(io.sockets.adapter.rooms);
 
 		const filtered = rooms.filter((room) => !room[1].has(room[0]));
@@ -65,7 +66,7 @@ io.on('connection', (socket) => {
 
 	socket.on('disconnecting', () => {
 		console.log('User disconnecting');
-		//? TODO - If we get the chance we could show a warning that they're disconnecting. Like a loading spinner and attempting to reconnect
+		// TODO - If we get the chance we could show a warning that they're disconnecting. Like a loading spinner and attempting to reconnect
 	});
 
 	socket.on('disconnected', () => {
