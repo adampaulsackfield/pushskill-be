@@ -5,3 +5,8 @@ exports.getUsers = async (req, res) => {
 
 	res.status(200).send(users);
 };
+
+exports.postUsers = async (req, res) => {
+	const user = await User.create(req.body)
+	res.status(201).send(user);
+}
