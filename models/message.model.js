@@ -4,7 +4,7 @@ const User = require('../models/user.model');
 const messageSchema = mongoose.Schema(
 	{
 		recipientId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-		message: { type: 'string' },
+		message: { type: String },
 	},
 	{ timestamps: true }
 );
