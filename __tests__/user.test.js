@@ -61,7 +61,7 @@ describe('USER', () => {
 				.expect(400)
 				.then((res) => {
 					expect(res.body).toBeInstanceOf(Object);
-					expect(res.body.message).toEqual('missing required field');
+					expect(res.body.message).toEqual('missing required fields');
 				});
 		});
 
@@ -76,7 +76,7 @@ describe('USER', () => {
 				.expect(400)
 				.then((res) => {
 					expect(res.body).toBeInstanceOf(Object);
-					expect(res.body.message).toEqual('missing required field');
+					expect(res.body.message).toEqual('missing required fields');
 				});
 		});
 
@@ -165,7 +165,7 @@ describe('USER', () => {
 				.expect(400)
 				.then((res) => {
 					expect(res.body).toBeInstanceOf(Object);
-					expect(res.body.message).toEqual('missing required field');
+					expect(res.body.message).toEqual('missing required fields');
 				});
 		});
 
@@ -180,7 +180,7 @@ describe('USER', () => {
 				.expect(400)
 				.then((res) => {
 					expect(res.body).toBeInstanceOf(Object);
-					expect(res.body.message).toEqual('missing required field');
+					expect(res.body.message).toEqual('missing required fields');
 				});
 		});
 	});

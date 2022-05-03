@@ -3,16 +3,13 @@ const {
 	loginUser,
 	registerUser,
 } = require('../controllers/user.controller');
+
 const protectedRoute = require('../middleware/authMiddleware');
+
 const usersRouter = require('express').Router();
 
-// GET
-usersRouter.get('/', protectedRoute, getUsers);
+usersRouter.route('/').get(protectedRoute, getUsers).post(registerUser);
 
-//Register user
-usersRouter.post('/', registerUser);
-
-//Login user
-usersRouter.post('/login', loginUser);
+usersRouter.route('/login').post(loginUser);
 
 module.exports = usersRouter;

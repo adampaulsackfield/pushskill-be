@@ -15,7 +15,7 @@ const registerUser = async (req, res) => {
 
 	try {
 		if (!username || !password) {
-			throw new Error('missing required field');
+			throw new Error('missing required fields');
 		}
 
 		const userExists = await User.findOne({ username });
@@ -46,7 +46,7 @@ const loginUser = async (req, res) => {
 
 	try {
 		if (!username || !password) {
-			throw new Error('missing required field');
+			throw new Error('missing required fields');
 		}
 
 		const user = await User.findOne({ username });
