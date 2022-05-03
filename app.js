@@ -6,8 +6,12 @@ const cors = require("cors");
 const { Server } = require("socket.io");
 const http = require("http");
 
-const usersRouter = require("./routes/usersRouter");
+const usersRouter = require('./routes/usersRouter');
+const connectDB = require('./db/connection');
+const messagesRouter = require('./routes/messagesRoutes');
+
 const connectDB = require("./db/connection");
+
 
 connectDB();
 
@@ -16,6 +20,10 @@ app.use(express.json());
 app.use(cors());
 
 // GET
+
+
+app.use('/api', messagesRouter);
+
 app.use("/api", usersRouter);
 app.get("/api/hc", (req, res) => res.status(200).send("HELLO"));
 app.use((err, req, res, next) => {
@@ -25,6 +33,7 @@ app.use((err, req, res, next) => {
     next(err);
   }
 });
+
 
 // Socket.io
 const server = http.createServer(app);
