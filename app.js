@@ -40,8 +40,7 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('chat_message', (data) => {
-		const { chatId, senderId, senderId, recipientId, message, timestamps } =
-			data;
+		const { chatId, senderId, recipientId, message, timestamps } = data;
 		//? TODO - This is where the message will be added to the MessageModel
 		//? TODO - roomName will become unique using UUID - generate here
 		// Message Model
