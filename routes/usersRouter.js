@@ -1,7 +1,7 @@
 const {
 	getUsers,
-	postUser,
 	loginUser,
+	registerUser,
 } = require('../controllers/user.controller');
 const protectedRoute = require('../middleware/authMiddleware');
 const usersRouter = require('express').Router();
@@ -10,7 +10,7 @@ const usersRouter = require('express').Router();
 usersRouter.get('/', protectedRoute, getUsers);
 
 //Register user
-usersRouter.post('/', postUser);
+usersRouter.post('/', registerUser);
 
 //Login user
 usersRouter.post('/login', loginUser);

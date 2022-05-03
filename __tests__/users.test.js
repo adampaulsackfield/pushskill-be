@@ -1,29 +1,238 @@
 const mongoose = require('mongoose');
 const request = require('supertest');
 const app = require('../app');
+
 const User = require('../models/user.model');
-const testData = require('../db/data/test-data.json');
+const userData = require('../db/data/userData');
+
+// Valid User for Loggin In
+// {
+// 	username: 'Bcrypt User',
+// 	password: 'YECm9jCO8b',
+// };
 
 beforeEach((done) => {
 	mongoose.connect(process.env.DB_URI, () => {
 		const seedDB = async () => {
 			await User.deleteMany({});
-			await User.insertMany(testData);
+			await User.insertMany(userData);
 		};
-		seedDB()
-			.then(() => {
-				done();
-			})
-			.catch((err) => {
-				console.log('err:', err);
-			});
+
+		seedDB().then(() => {
+			done();
+		});
 	});
 });
 
 afterEach((done) => {
 	mongoose.connection.db.dropDatabase(() => {
-		mongoose.connection.close(() => {
-			return done();
+		mongoose.connection.close(() => done());
+	});
+});
+
+describe('USER', () => {
+	describe('POST /api/users', () => {
+		const ENDPOINT = '/api/users';
+
+		it('should return a status of 201 when a user is created', () => {
+			const user = {
+				username: 'Adam Sackfield',
+				password: 'D9Unvtz',
+			};
+
+			return request(app)
+				.post(ENDPOINT)
+				.send(user)
+				.expect(201)
+				.then((res) => {
+					expect(res.body.user).toBeInstanceOf(Object);
+					expect(res.body.user.username).toEqual('Adam Sackfield');
+				});
+		});
+
+		it('should return a status of 400 when signing up without a username', () => {
+			const user = {
+				password: 'D9Unvtz',
+			};
+
+			return request(app)
+				.post(ENDPOINT)
+				.send(user)
+				.expect(400)
+				.then((res) => {
+					expect(res.body).toBeInstanceOf(Object);
+					expect(res.body.message).toEqual('missing required field');
+				});
+		});
+
+		it('should return a status of 400 when signing up without a password', () => {
+			const user = {
+				username: 'Adam Sackfield',
+			};
+
+			return request(app)
+				.post(ENDPOINT)
+				.send(user)
+				.expect(400)
+				.then((res) => {
+					expect(res.body).toBeInstanceOf(Object);
+					expect(res.body.message).toEqual('missing required field');
+				});
+		});
+
+		it('should return a status of 400 when the username is already taken', () => {
+			const user = {
+				username: 'afaye0',
+				password: 'password',
+			};
+
+			return request(app)
+				.post(ENDPOINT)
+				.send(user)
+				.expect(400)
+				.then((res) => {
+					expect(res.body).toBeInstanceOf(Object);
+					expect(res.body.message).toEqual('user already exists');
+				});
+		});
+	});
+
+	describe('POST /api/users/login', () => {
+		const ENDPOINT = '/api/users/login';
+
+		it('should return a status of 200 when a user is logged in successfully', () => {
+			// To enable testing of a logged in user it was required to use bcryptjs to hash a password and add that to the userData, as the last entry
+			const user = {
+				username: 'Bcrypt User',
+				password: 'YECm9jCO8b',
+			};
+
+			return request(app)
+				.post(ENDPOINT)
+				.send(user)
+				.expect(200)
+				.then((res) => {
+					expect(res.body.user).toBeInstanceOf(Object);
+					expect(res.body.user.username).toEqual('Bcrypt User');
+					expect(res.body.user).toMatchObject({
+						id: expect.any(String),
+						token: expect.any(String),
+						username: expect.any(String),
+					});
+				});
+		});
+
+		it('should return a status of 400 when given the wrong password', () => {
+			const user = {
+				username: 'Bcrypt User',
+				password: 'I am wrong',
+			};
+
+			return request(app)
+				.post(ENDPOINT)
+				.send(user)
+				.expect(400)
+				.then((res) => {
+					expect(res.body).toBeInstanceOf(Object);
+					expect(res.body.message).toEqual('invalid login credentials');
+				});
+		});
+
+		it('should return a status of 400 when given the wrong username', () => {
+			const user = {
+				username: 'I no here',
+				password: 'YECm9jCO8b',
+			};
+
+			return request(app)
+				.post(ENDPOINT)
+				.send(user)
+				.expect(400)
+				.then((res) => {
+					expect(res.body).toBeInstanceOf(Object);
+					expect(res.body.message).toEqual('invalid login credentials');
+				});
+		});
+
+		it('should return a status of 400 when logging in without a username', () => {
+			const user = {
+				password: 'D9Unvtz',
+			};
+
+			return request(app)
+				.post(ENDPOINT)
+				.send(user)
+				.expect(400)
+				.then((res) => {
+					expect(res.body).toBeInstanceOf(Object);
+					expect(res.body.message).toEqual('missing required field');
+				});
+		});
+
+		it('should return a status of 400 when loggin in without a password', () => {
+			const user = {
+				username: 'Adam Sackfield',
+			};
+
+			return request(app)
+				.post(ENDPOINT)
+				.send(user)
+				.expect(400)
+				.then((res) => {
+					expect(res.body).toBeInstanceOf(Object);
+					expect(res.body.message).toEqual('missing required field');
+				});
+		});
+	});
+
+	describe('GET /api/users', () => {
+		const ENDPOINT = '/api/users';
+
+		it('should return an array of users if presented a valid JWT', async () => {
+			const user = {
+				username: 'Bcrypt User',
+				password: 'YECm9jCO8b',
+			};
+
+			// Here we are required to first log in the user so we can send the token on the protected route.
+			const loginResponse = await request(app)
+				.post(`${ENDPOINT}/login`)
+				.send(user);
+			const userToken = loginResponse.body.user.token;
+
+			return request(app)
+				.get(ENDPOINT)
+				.set('Authorization', `Bearer ${userToken}`)
+				.expect(200)
+				.then((res) => {
+					expect(res.body.users).toBeInstanceOf(Array);
+					expect(res.body.users.length).toBe(101);
+				});
+		});
+
+		it('should return a 401 unauthorised when an invalid JWT is presented', () => {
+			const invalidToken =
+				'Bearer dyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyNzE1ODY4ZDI0OTM2MDU3ZjcyNjgwMiIsImlhdCI6MTY1MTU5NjM3NywiZXhwIjoxNjU0MTg4Mzc3fQ.CDLjN7-BIQxvVxKsjPvQg-RlBBAV1NfueYmfrt0wLcA';
+
+			return request(app)
+				.get(ENDPOINT)
+				.set('Authorization', invalidToken)
+				.expect(401)
+				.then((res) => {
+					expect(res.body.message).toEqual('Not authorised');
+				});
+		});
+
+		it('should return a 401 unauthorised when no JWT is presented ', () => {
+			const notToken = 'I am not a token, I am but a string';
+
+			return request(app)
+				.get(ENDPOINT)
+				.set('Authorization', notToken)
+				.expect(401)
+				.then((res) => {
+					expect(res.body.message).toEqual('Not authorised. No token');
+				});
 		});
 	});
 });
