@@ -5,10 +5,9 @@
 	"main": "index.js",
 	"scripts": {
 		"test": "jest --watch",
-		"server": "nodemon ./server.js ./db/connection.js"
+		"server": "nodemon ./server.js"
 	},
 	"repository": {
-
 		"type": "git",
 		"url": "git+https://github.com/adampaulsackfield/pushskill-be.git"
 	},

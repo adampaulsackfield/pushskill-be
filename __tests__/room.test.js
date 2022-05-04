@@ -47,7 +47,6 @@ describe('ROOM', () => {
 
 			const room = {
 				member: '627163a6fc13ae4f3d000668',
-				messages: [],
 			};
 
 			return request(app)
@@ -189,7 +188,7 @@ describe('ROOM', () => {
 		});
 	});
 
-	describe('GET /api/room/:room_id', () => {
+	describe('GET /api/rooms/:room_id', () => {
 		it('should return a status of 200 when a valid room is found ', async () => {
 			// Login the user as this is a protected route
 			const loginResponse = await request(app)
@@ -216,6 +215,177 @@ describe('ROOM', () => {
 				.then((res) => {
 					expect(res.body.room).toBeInstanceOf(Object);
 					expect(res.body.room._id).toEqual(roomId);
+				});
+		});
+
+		it('should return a status of 400 when not provied with a valid roomId', async () => {
+			// Login the user as this is a protected route
+			const loginResponse = await request(app)
+				.post(`/api/users/login`)
+				.send(validUserAccount);
+
+			const userToken = loginResponse.body.user.token;
+
+			const roomId = 'I am not a roomId';
+
+			return request(app)
+				.get(`/api/rooms/${roomId}/messages`)
+				.set('Authorization', `Bearer ${userToken}`)
+				.expect(400)
+				.then((res) => {
+					expect(res.body.message).toEqual('Room id not valid');
+				});
+		});
+
+		it('should return a 401 unauthorised when an invalid JWT is presented', () => {
+			const invalidToken =
+				'Bearer dyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyNzE1ODY4ZDI0OTM2MDU3ZjcyNjgwMiIsImlhdCI6MTY1MTU5NjM3NywiZXhwIjoxNjU0MTg4Mzc3fQ.CDLjN7-BIQxvVxKsjPvQg-RlBBAV1NfueYmfrt0wLcA';
+
+			const roomId = 'I am not a roomId';
+
+			return request(app)
+				.get(`/api/rooms/${roomId}/messages`)
+				.set('Authorization', invalidToken)
+				.expect(401)
+				.then((res) => {
+					expect(res.body.message).toEqual('Not authorised');
+				});
+		});
+
+		it('should return a 401 unauthorised when no JWT is presented ', () => {
+			const notToken = 'I am not a token, I am but a string';
+
+			const roomId = 'I am not a roomId';
+
+			return request(app)
+				.get(`/api/rooms/${roomId}/messages`)
+				.set('Authorization', notToken)
+				.expect(401)
+				.then((res) => {
+					expect(res.body.message).toEqual('Not authorised. No token');
+				});
+		});
+	});
+
+	describe('GET /api/rooms/:room_id/messages', () => {
+		it('should return a status of 200 and an array of messages when presented with a valid JWT - no messages', async () => {
+			// Login the user as this is a protected route
+			const loginResponse = await request(app)
+				.post(`/api/users/login`)
+				.send(validUserAccount);
+
+			const userToken = loginResponse.body.user.token;
+
+			// Create a room
+			const room = {
+				member: '627163a6fc13ae4f3d000668',
+			};
+
+			const createRoomResponse = await request(app)
+				.post('/api/rooms')
+				.set('Authorization', `Bearer ${userToken}`)
+				.send(room);
+
+			const roomId = createRoomResponse.body.room._id;
+
+			// Return an array of messages - here should be empty
+			return request(app)
+				.get(`/api/rooms/${roomId}/messages`)
+				.set('Authorization', `Bearer ${userToken}`)
+				.expect(200)
+				.then((res) => {
+					expect(res.body.messages).toBeInstanceOf(Array);
+					expect(res.body.messages.length).toBe(0);
+				});
+		});
+
+		it('should return a status of 200 and an array of messages when presented with a valid JWT - with a message', async () => {
+			// Login the user as this is a protected route
+			const loginResponse = await request(app)
+				.post(`/api/users/login`)
+				.send(validUserAccount);
+
+			const userToken = loginResponse.body.user.token;
+
+			// Create a room
+			const room = {
+				member: '627163a6fc13ae4f3d000668',
+			};
+
+			const createRoomResponse = await request(app)
+				.post('/api/rooms')
+				.set('Authorization', `Bearer ${userToken}`)
+				.send(room);
+
+			const roomId = createRoomResponse.body.room._id;
+
+			const message = {
+				message: 'This is a message',
+				recipientId: '627163a6fc13ae4f3d000668',
+				room_id: roomId,
+			};
+
+			const createMessageResponse = await request(app)
+				.post('/api/messages')
+				.set('Authorization', `Bearer ${userToken}`)
+				.send(message);
+
+			// Return an array of messages - here should be one
+			return request(app)
+				.get(`/api/rooms/${roomId}/messages`)
+				.set('Authorization', `Bearer ${userToken}`)
+				.expect(200)
+				.then((res) => {
+					expect(res.body.messages).toBeInstanceOf(Array);
+					expect(res.body.messages.length).toBe(1);
+				});
+		});
+
+		it('should return a status of 400 when not provied with a valid roomId', async () => {
+			// Login the user as this is a protected route
+			const loginResponse = await request(app)
+				.post(`/api/users/login`)
+				.send(validUserAccount);
+
+			const userToken = loginResponse.body.user.token;
+
+			const roomId = 'I am not a roomId';
+
+			return request(app)
+				.get(`/api/rooms/${roomId}/messages`)
+				.set('Authorization', `Bearer ${userToken}`)
+				.expect(400)
+				.then((res) => {
+					expect(res.body.message).toEqual('Room id not valid');
+				});
+		});
+
+		it('should return a 401 unauthorised when an invalid JWT is presented', () => {
+			const invalidToken =
+				'Bearer dyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyNzE1ODY4ZDI0OTM2MDU3ZjcyNjgwMiIsImlhdCI6MTY1MTU5NjM3NywiZXhwIjoxNjU0MTg4Mzc3fQ.CDLjN7-BIQxvVxKsjPvQg-RlBBAV1NfueYmfrt0wLcA';
+
+			const roomId = 'I am not a roomId';
+
+			return request(app)
+				.get(`/api/rooms/${roomId}/messages`)
+				.set('Authorization', invalidToken)
+				.expect(401)
+				.then((res) => {
+					expect(res.body.message).toEqual('Not authorised');
+				});
+		});
+
+		it('should return a 401 unauthorised when no JWT is presented ', () => {
+			const notToken = 'I am not a token, I am but a string';
+
+			const roomId = 'I am not a roomId';
+
+			return request(app)
+				.get(`/api/rooms/${roomId}/messages`)
+				.set('Authorization', notToken)
+				.expect(401)
+				.then((res) => {
+					expect(res.body.message).toEqual('Not authorised. No token');
 				});
 		});
 	});
