@@ -46,8 +46,19 @@ describe('MESSAGE', () => {
 
 			const userToken = loginResponse.body.user.token;
 
+			const room = {
+				member: '627163a6fc13ae4f3d000668',
+			};
+
+			const createRoomResponse = await request(app)
+				.post('/api/rooms')
+				.set('Authorization', `Bearer ${userToken}`)
+				.send(room);
+
+			const roomId = createRoomResponse.body.room._id;
+
 			const message = {
-				senderId: '627163a6fc13ae4f3d000668',
+				room_id: roomId,
 				recipientId: '627163a6fc13ae4f3d000668',
 				message: 'This is a test message',
 			};
