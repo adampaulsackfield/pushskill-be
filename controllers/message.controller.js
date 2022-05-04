@@ -25,9 +25,10 @@ const createMessage = async (req, res) => {
 		};
 
 		const createMessage = await Message.create(newMsg);
-		const addToRoom = await Room.findById(room_id);
-		addToRoom.messages.push(createMessage.id);
-		addToRoom.save();
+		await Room.updateOne(
+			{ _id: room_id },
+			{ $push: { messages: createMessage.id } }
+		);
 
 		res.status(201).send({ message: createMessage });
 	} catch (error) {
