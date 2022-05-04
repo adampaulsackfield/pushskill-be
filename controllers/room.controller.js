@@ -34,4 +34,23 @@ const createRoom = async (req, res) => {
 	}
 };
 
-module.exports = { getRooms, createRoom };
+const getRoom = async (req, res) => {
+	const { room_id } = req.params;
+
+	try {
+		const room = await Room.findOne({ id: room_id });
+
+		if (!room) {
+			throw new Error('Room not found, you idiot!');
+		}
+		res.status(200).send({ room });
+	} catch (error) {
+		if (error.message) {
+			res.status(400).send({ message: error.message });
+		} else {
+			res.status(500).send({ message: 'server error' });
+		}
+	}
+};
+
+module.exports = { getRooms, createRoom, getRoom };
