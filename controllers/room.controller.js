@@ -13,9 +13,15 @@ const getRooms = async (req, res) => {
 const createRoom = async (req, res) => {
 	const { member } = req.body;
 
+	const isObjectId = isValidObjectId(member);
+
 	try {
 		if (!member) {
 			throw new Error('missing required fields');
+		}
+
+		if (!isObjectId) {
+			throw new Error('MemberId not valid');
 		}
 
 		const newRoom = {
@@ -38,10 +44,10 @@ const createRoom = async (req, res) => {
 const getRoom = async (req, res) => {
 	const { room_id } = req.params;
 
-	const isVailidObject = isValidObjectId(room_id);
+	const isObjectId = isValidObjectId(room_id);
 
 	try {
-		if (!isVailidObject) {
+		if (!isObjectId) {
 			throw new Error('Room id not valid');
 		}
 		const room = await Room.findById(room_id);
