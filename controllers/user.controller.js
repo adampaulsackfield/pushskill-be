@@ -81,23 +81,28 @@ const patchUserAchievements = async (req, res) => {
 	const { name, description, url } = req.body;
 	const { user_id } = req.params;
 
-	const achievement = {
-		name,
-		description,
-		url,
-	};
-
 	try {
-		const user = await User.updateOne(
+		if (!name || !description || !url) {
+			throw new Error('missing required fields');
+		}
+
+		const achievement = {
+			name,
+			description,
+			url,
+		};
+
+		const user = await User.findByIdAndUpdate(
 			{ _id: user_id },
 			{ $push: { achievements: achievement } },
 			{ new: true }
 		);
+
 		if (!user) {
 			throw new Error("User doesn't exist");
 		}
 
-		res.status(201).send({ user });
+		res.status(200).send({ user });
 	} catch (error) {
 		if (error.message) {
 			res.status(400).send({ message: error.message });
