@@ -1,15 +1,15 @@
 const {
 	getMessages,
-	postMessage,
+	createMessage,
 } = require('../controllers/message.controller');
 
 const protectedRoute = require('../middleware/authMiddleware');
 
-const messagesRouter = require('express').Router();
+const messageRouter = require('express').Router();
 
-messagesRouter
+messageRouter
 	.route('/')
 	.get(protectedRoute, getMessages)
-	.post(protectedRoute, postMessage);
+	.post(protectedRoute, createMessage);
 
-module.exports = messagesRouter;
+module.exports = messageRouter;

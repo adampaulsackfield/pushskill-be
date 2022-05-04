@@ -8,8 +8,9 @@ const http = require('http');
 
 const connectDB = require('./db/connection');
 
-const usersRouter = require('./routes/usersRouter');
-const messagesRouter = require('./routes/messagesRoutes');
+const userRouter = require('./routes/userRoutes');
+const messagesRouter = require('./routes/messageRoutes');
+const roomRouter = require('./routes/roomRoutes');
 
 connectDB();
 
@@ -19,7 +20,9 @@ app.use(cors());
 
 app.use('/api/messages', messagesRouter);
 
-app.use('/api/users', usersRouter);
+app.use('/api/users', userRouter);
+
+app.use('/api/rooms', roomRouter);
 
 app.get('/api/hc', (req, res) => res.status(200).send('API is running'));
 
@@ -43,7 +46,6 @@ const io = new Server(server, {
 io.on('connection', (socket) => {
 	socket.on('join_room', (chatId) => {
 		// TODO - This is where the room will be added to the ChatModel
-		// TODO - chatId will become unique using UUID - generate here
 		// Chat Model
 		// chatId
 		// members []
@@ -54,7 +56,6 @@ io.on('connection', (socket) => {
 	socket.on('chat_message', (data) => {
 		const { chatId, senderId, recipientId, message, timestamps } = data;
 		// TODO - This is where the message will be added to the MessageModel
-		// TODO - roomName will become unique using UUID - generate here
 		// Message Model
 		// messageId
 		// chatId

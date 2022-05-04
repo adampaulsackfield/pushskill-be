@@ -2,12 +2,14 @@ const mongoose = require('mongoose');
 
 const roomSchema = mongoose.Schema(
 	{
-		members: [
-			{
-				type: mongoose.Schema.Types.ObjectId,
-				ref: 'User',
-			},
-		],
+		creator: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'User',
+		},
+		member: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'User',
+		},
 		messages: [
 			{
 				type: mongoose.Schema.Types.ObjectId,

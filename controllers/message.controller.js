@@ -1,6 +1,6 @@
 const Message = require('../models/message.model');
 
-exports.getMessages = async (req, res) => {
+const getMessages = async (req, res) => {
 	const messages = await Message.find();
 
 	if (!messages) console.log('No messages found!');
@@ -8,7 +8,7 @@ exports.getMessages = async (req, res) => {
 	res.status(200).send({ messages });
 };
 
-exports.postMessage = async (req, res) => {
+const createMessage = async (req, res) => {
 	const { message, recipientId, roomId } = req.body;
 
 	try {
@@ -34,3 +34,5 @@ exports.postMessage = async (req, res) => {
 		}
 	}
 };
+
+module.exports = { getMessages, createMessage };
