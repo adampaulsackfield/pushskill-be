@@ -9,7 +9,7 @@ exports.getMessages = async (req, res) => {
 };
 
 exports.postMessage = async (req, res) => {
-	const { message, recipientId } = req.body;
+	const { message, recipientId, roomId } = req.body;
 
 	try {
 		if (!message || !recipientId) {
@@ -17,6 +17,7 @@ exports.postMessage = async (req, res) => {
 		}
 
 		const newMsg = {
+			roomId,
 			message,
 			senderId: req.user.id,
 			recipientId,
