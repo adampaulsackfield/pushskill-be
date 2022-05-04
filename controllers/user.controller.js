@@ -1,20 +1,21 @@
 const User = require('../models/user.model.js');
+
 const hashPassword = require('../utlis/hashPassword');
 const comparePassword = require('../utlis/comparePassword');
 const generateToken = require('../utlis/generateToken');
 
-exports.getUsers = async (req, res, next) => {
+const getUsers = async (req, res) => {
 	const users = await User.find();
 
-	res.status(200).send(users);
+	res.status(200).send({ users });
 };
 
-exports.postUser = async (req, res, next) => {
+const registerUser = async (req, res) => {
 	const { username, password } = req.body;
 
 	try {
 		if (!username || !password) {
-			throw new Error('missing required field');
+			throw new Error('missing required fields');
 		}
 
 		const userExists = await User.findOne({ username });
@@ -30,7 +31,7 @@ exports.postUser = async (req, res, next) => {
 
 		const user = await User.create(newUser);
 
-		res.status(201).send(user);
+		res.status(201).send({ user });
 	} catch (error) {
 		if (error.message) {
 			res.status(400).send({ message: error.message });
@@ -40,12 +41,12 @@ exports.postUser = async (req, res, next) => {
 	}
 };
 
-exports.loginUser = async (req, res, next) => {
+const loginUser = async (req, res) => {
 	const { username, password } = req.body;
 
 	try {
 		if (!username || !password) {
-			throw new Error('missing required field');
+			throw new Error('missing required fields');
 		}
 
 		const user = await User.findOne({ username });
@@ -66,7 +67,7 @@ exports.loginUser = async (req, res, next) => {
 			token: generateToken(user.id),
 		};
 
-		res.status(200).send(validatedUser);
+		res.status(200).send({ user: validatedUser });
 	} catch (error) {
 		if (error.message) {
 			res.status(400).send({ message: error.message });
@@ -75,3 +76,5 @@ exports.loginUser = async (req, res, next) => {
 		}
 	}
 };
+
+module.exports = { getUsers, registerUser, loginUser };

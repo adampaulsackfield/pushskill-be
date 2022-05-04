@@ -5,17 +5,31 @@ exports.getMessages = async (req, res) => {
 
 	if (!messages) console.log('No messages found!');
 
-	res.status(200).send(messages);
+	res.status(200).send({ messages });
 };
 
 exports.postMessage = async (req, res) => {
-	const { message } = req.body;
-	const newMsg = {
-		message: message,
-		senderId: req.user.id,
-		recipientId: req.user.id,
-	};
-	const createMessage = await Message.create(newMsg);
+	const { message, recipientId } = req.body;
 
-	res.status(200).send(createMessage);
+	try {
+		if (!message || !recipientId) {
+			throw new Error('missing required fields');
+		}
+
+		const newMsg = {
+			message,
+			senderId: req.user.id,
+			recipientId,
+		};
+
+		const createMessage = await Message.create(newMsg);
+
+		res.status(201).send({ message: createMessage });
+	} catch (error) {
+		if (error.message) {
+			res.status(400).send({ message: error.message });
+		} else {
+			res.status(500).send({ message: 'server error' });
+		}
+	}
 };
