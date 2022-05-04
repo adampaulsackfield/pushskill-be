@@ -1,8 +1,8 @@
 const User = require('../models/user.model.js');
 
-const hashPassword = require('../utlis/hashPassword');
-const comparePassword = require('../utlis/comparePassword');
-const generateToken = require('../utlis/generateToken');
+const hashPassword = require('../utils/hashPassword');
+const comparePassword = require('../utils/comparePassword');
+const generateToken = require('../utils/generateToken');
 
 const getUsers = async (req, res) => {
 	const users = await User.find();

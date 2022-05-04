@@ -1,4 +1,5 @@
 const Room = require('../models/room.model');
+const isValidObjectId = require('../utils/isObjectIdValid');
 
 const getRooms = async (req, res) => {
 	const rooms = await Room.find({
@@ -37,8 +38,13 @@ const createRoom = async (req, res) => {
 const getRoom = async (req, res) => {
 	const { room_id } = req.params;
 
+	const isVailidObject = isValidObjectId(room_id);
+
 	try {
-		const room = await Room.findOne({ id: room_id });
+		if (!isVailidObject) {
+			throw new Error('Room id not valid');
+		}
+		const room = await Room.findById(room_id);
 
 		if (!room) {
 			throw new Error('Room not found, you idiot!');
