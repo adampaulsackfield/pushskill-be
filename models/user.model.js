@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const achievementSchema = new mongoose.Schema(
 	{
-		name: 'string',
+		name: { type: 'string', unique: true },
 		url: {
 			type: 'string',
 			default:
@@ -28,13 +28,6 @@ const userSchema = mongoose.Schema({
 		],
 	},
 	password: { type: String, required: true },
-	// children: [achievementSchema],
 });
-
-// const achievementSchema = new mongoose.Schema({
-// 	name: 'string',
-// 	url: 'string',
-// 	description: 'string',
-// });
 
 module.exports = mongoose.model('User', userSchema);

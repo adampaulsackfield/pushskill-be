@@ -94,8 +94,7 @@ const patchUserAchievements = async (req, res) => {
 
 		const user = await User.findByIdAndUpdate(
 			{ _id: user_id },
-			{ $push: { achievements: achievement } },
-			{ new: true }
+			{ $push: { achievements: achievement } }
 		);
 
 		if (!user) {
