@@ -77,4 +77,34 @@ const loginUser = async (req, res) => {
 	}
 };
 
-module.exports = { getUsers, registerUser, loginUser };
+const patchUserAchievements = async (req, res) => {
+	const { name, description, url } = req.body;
+	const { user_id } = req.params;
+
+	const achievement = {
+		name,
+		description,
+		url,
+	};
+
+	try {
+		const user = await User.updateOne(
+			{ _id: user_id },
+			{ $push: { achievements: achievement } },
+			{ new: true }
+		);
+		if (!user) {
+			throw new Error("User doesn't exist");
+		}
+
+		res.status(201).send({ user });
+	} catch (error) {
+		if (error.message) {
+			res.status(400).send({ message: error.message });
+		} else {
+			res.status(500).send({ message: 'server error' });
+		}
+	}
+};
+
+module.exports = { getUsers, registerUser, loginUser, patchUserAchievements };
