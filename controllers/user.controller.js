@@ -90,8 +90,7 @@ const patchUserAchievements = async (req, res) => {
 	try {
 		const user = await User.updateOne(
 			{ _id: user_id },
-			{ $push: { achievements: achievement } },
-			{ new: true }
+			{ $push: { achievements: achievement } }
 		);
 		if (!user) {
 			throw new Error("User doesn't exist");
