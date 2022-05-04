@@ -1,4 +1,5 @@
 const Message = require('../models/message.model');
+const Room = require('../models/room.model');
 
 const getMessages = async (req, res) => {
 	const messages = await Message.find();
@@ -9,7 +10,7 @@ const getMessages = async (req, res) => {
 };
 
 const createMessage = async (req, res) => {
-	const { message, recipientId, roomId } = req.body;
+	const { message, recipientId, room_id } = req.body;
 
 	try {
 		if (!message || !recipientId) {
@@ -17,13 +18,16 @@ const createMessage = async (req, res) => {
 		}
 
 		const newMsg = {
-			roomId,
+			room_id,
 			message,
 			senderId: req.user.id,
 			recipientId,
 		};
 
 		const createMessage = await Message.create(newMsg);
+		const addToRoom = await Room.findById(room_id);
+		addToRoom.messages.push(createMessage.id);
+		addToRoom.save();
 
 		res.status(201).send({ message: createMessage });
 	} catch (error) {
