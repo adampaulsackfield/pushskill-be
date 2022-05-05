@@ -112,4 +112,27 @@ const patchUserAchievements = async (req, res) => {
 	}
 };
 
-module.exports = { getUsers, registerUser, loginUser, patchUserAchievements };
+const getSingleUser = async (req, res) => {
+	const { user_id } = req.params;
+
+	try {
+		const user = await User.findById(user_id).select('-password');
+		if (user) {
+			res.status(200).send({ user });
+		} else throw new Error('User not found, you muppet');
+	} catch (error) {
+		if (error.message) {
+			res.status(404).send({ message: error.message });
+		} else {
+			res.status(500).send({ message: 'server error' });
+		}
+	}
+};
+
+module.exports = {
+	getUsers,
+	registerUser,
+	loginUser,
+	patchUserAchievements,
+	getSingleUser,
+};
