@@ -1,15 +1,13 @@
-// TEMP CONTENT START
-let tempToken =
-	'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyNzJlZGU0ZGNmNWY5YzNkYmE4YjA1NiIsImlhdCI6MTY1MTcxMTMxNiwiZXhwIjoxNjU0MzAzMzE2fQ.ES2fr4ct4K6FWQU-uF_MqIVO3OtvPkDljp0585orH0U';
-
-let tempUserId = '62715868d24936057f726802';
-// TEMP CONTENT END
-
 const { Server } = require('socket.io');
 const http = require('http');
 const PORT = process.env.PORT || 9090;
 const app = require('./app');
-const { getRoomsAction, createRoomAction } = require('./actions/room.actions');
+const {
+	getRoomsAction,
+	createRoomAction,
+	getRoomMessagesAction,
+} = require('./actions/room.actions');
+const { createMessageAction } = require('./actions/message.action');
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -26,12 +24,8 @@ io.on('connection', (socket) => {
 	console.log('Connected to socket.io...');
 
 	// Joining a room
-	socket.once('join_room', (roomName, token, userId) => {
-		createRoomAction(
-			tempToken,
-			tempUserId, // recipientId
-			roomName
-		)
+	socket.once('join_room', ({ roomName, token, recipientId }) => {
+		createRoomAction(token, recipientId, roomName)
 			.then((res) => {
 				console.log('room added', res.room);
 				socket.join(res.room.id);
@@ -43,8 +37,8 @@ io.on('connection', (socket) => {
 	});
 
 	// Listing Rooms the User is in
-	socket.on('list_rooms', (token) => {
-		getRoomsAction(tempToken)
+	socket.on('list_rooms', ({ token }) => {
+		getRoomsAction(token)
 			.then((res) => {
 				console.log('rooms list', res.rooms);
 				socket.emit('rooms_list', res.rooms);
@@ -54,49 +48,43 @@ io.on('connection', (socket) => {
 				socket.emit('error_message', err.message); // This needs to be implemented on client
 			});
 	});
+
+	// Returning a single Room By ID
+	socket.on('room_by_id', ({ token, roomId }) => {
+		getRoomAction(token, roomId)
+			.then((res) => {
+				console.log('room_by_id', res.room);
+				socket.emit('current_room', res.room);
+			})
+			.catch((err) => {
+				console.log('room_by_id', err.message);
+				socket.emit('error_message', err.message);
+			});
+	});
+
+	// Returning all messages for a single room
+	socket.on('get_message', ({ token, roomId }) => {
+		getRoomMessagesAction(token, roomId)
+			.then((res) => {
+				console.log('get_message', res.messages);
+				socket.emit('room_messages', res.messages);
+			})
+			.catch((err) => {
+				console.log('get_message', err.message);
+				socket.emit('error_message', err.message);
+			});
+	});
+
+	// Creating a message
+	socket.on('chat_message', ({ token, roomId, recipientId, message }) => {
+		createMessageAction(token, roomId, recipientId, message)
+			.then((res) => {
+				console.log('chat_message)', res.message);
+				socket.to(roomId).emit('receive_message', res.message);
+			})
+			.catch((err) => {
+				console.log('chat_message', err.message);
+				socket.emit('error_message', err.message);
+			});
+	});
 });
-
-// io.on('connection', (socket) => {
-// 	console.log('Connected...');
-// 	socket.on('join_room', (roomId) => {
-// 		// TODO - This is where the room will be added to the ChatModel
-// 		// Chat Model
-// 		// chatId
-// 		// members []
-// 		// timestamps
-// 		socket.join(roomId);
-// 	});
-
-// 	socket.on('chat_message', (data) => {
-// 		const { chatId, senderId, recipientId, message, timestamps } = data;
-// 		// TODO - This is where the message will be added to the MessageModel
-// 		// Message Model
-// 		// messageId
-// 		// chatId
-// 		// senderId
-// 		// recipientId
-// 		// message
-// 		// timestamps
-// 		socket.to(chatId).emit('receive_message', data);
-// 	});
-
-// 	socket.on('list_rooms', () => {
-// 		// TODO - Here is where we will query the DB to get the users existing rooms/chats
-// 		const rooms = Array.from(io.sockets.adapter.rooms);
-
-// 		const filtered = rooms.filter((room) => !room[1].has(room[0]));
-
-// 		const res = filtered.map((i) => i[0]);
-
-// 		socket.emit('rooms_list', res);
-// 	});
-
-// 	socket.on('disconnecting', () => {
-// 		console.log('User disconnecting');
-// 		// TODO - If we get the chance we could show a warning that they're disconnecting. Like a loading spinner and attempting to reconnect
-// 	});
-
-// 	socket.on('disconnected', () => {
-// 		console.log('User disconnected');
-// 	});
-// });
