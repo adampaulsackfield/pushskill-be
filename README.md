@@ -125,6 +125,17 @@ Local use:
     users: [ <br>
     {*user1 data*}, {*user2 data*}, {*user3 data*}<br>
     ]}
+    
+- GET /api/users/:user_id - See the details of a single user. **Protected route**
+
+  - example response: {<br>
+  "user": {<br>
+	"_id": "_id_",<br>
+	"username": "test",<br>
+	"traits": [], <br>
+	"learningInterests": [],<br>
+	"achievements": [],<br>
+	}
 
 - PATCH /api/users/:user_id - add an achievement to the user by user_id. **Protected route**
 
