@@ -1,3 +1,10 @@
+// TEMP CONTENT START
+let tempToken =
+	'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyNzJlZGU0ZGNmNWY5YzNkYmE4YjA1NiIsImlhdCI6MTY1MTcxMTMxNiwiZXhwIjoxNjU0MzAzMzE2fQ.ES2fr4ct4K6FWQU-uF_MqIVO3OtvPkDljp0585orH0U';
+
+let tempUserId = '62715868d24936057f726802';
+// TEMP CONTENT END
+
 const { Server } = require('socket.io');
 const http = require('http');
 const PORT = process.env.PORT || 9090;
@@ -14,35 +21,38 @@ const io = new Server(server, {
 
 server.listen(PORT);
 
-let tempToken =
-	'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyNzJlZGU0ZGNmNWY5YzNkYmE4YjA1NiIsImlhdCI6MTY1MTY5OTE4MCwiZXhwIjoxNjU0MjkxMTgwfQ.Xixp8cO0mkjmP0XPb_MIxA-THJ9dTpqkSxj4IB8On8c';
-
-let tempUserId = '62715868d24936057f726802';
-
 // Initial connection from the a client
 io.on('connection', (socket) => {
 	console.log('Connected to socket.io...');
 
 	// Joining a room
-	socket.once('join_room', async (roomName, token, userId) => {
-		const room = await createRoomAction(
+	socket.once('join_room', (roomName, token, userId) => {
+		createRoomAction(
 			tempToken,
 			tempUserId, // recipientId
 			roomName
-		);
-
-		// if (!room.id) socket.emit('error_message', 'Error whilst creating room');
-		if (!room.id) console.log(room);
-		else socket.join(room.id);
+		)
+			.then((res) => {
+				console.log('room added', res.room);
+				socket.join(res.room.id);
+			})
+			.catch((err) => {
+				console.log('room add failed', err.message);
+				socket.emit('error_message', err.message); // This needs to be implemented on client
+			});
 	});
 
 	// Listing Rooms the User is in
-	socket.on('list_rooms', async (token) => {
-		const rooms = await getRoomsAction(tempToken);
-
-		// if (!rooms) socket.emit('error_message', 'Token missing or invalid');
-		if (!rooms) console.log(rooms);
-		else socket.emit('rooms_list', rooms);
+	socket.on('list_rooms', (token) => {
+		getRoomsAction(tempToken)
+			.then((res) => {
+				console.log('rooms list', res.rooms);
+				socket.emit('rooms_list', res.rooms);
+			})
+			.catch((err) => {
+				console.log('rooms list', err.message);
+				socket.emit('error_message', err.message); // This needs to be implemented on client
+			});
 	});
 });
 
