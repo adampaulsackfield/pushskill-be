@@ -112,4 +112,26 @@ const patchUserAchievements = async (req, res) => {
 	}
 };
 
-module.exports = { getUsers, registerUser, loginUser, patchUserAchievements };
+const getSingleUser = async (req, res) => {
+	const { user_id } = req.params;
+
+	try {
+		const user = await User.findById(user_id);
+		res.status(200).send(user);
+		console.log(user);
+	} catch (error) {
+		if (error.message) {
+			res.status(400).send({ message: error.message });
+		} else {
+			res.status(500).send({ message: 'server error' });
+		}
+	}
+};
+
+module.exports = {
+	getUsers,
+	registerUser,
+	loginUser,
+	patchUserAchievements,
+	getSingleUser,
+};
