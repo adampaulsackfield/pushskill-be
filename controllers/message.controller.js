@@ -13,7 +13,7 @@ const createMessage = async (req, res) => {
 	const { message, recipientId, room_id } = req.body;
 
 	try {
-		if (!message || !recipientId) {
+		if (!message || !recipientId || !room_id) {
 			throw new Error('missing required fields');
 		}
 
@@ -25,9 +25,10 @@ const createMessage = async (req, res) => {
 		};
 
 		const createMessage = await Message.create(newMsg);
-		await Room.updateOne(
+		await Room.findByIdAndUpdate(
 			{ _id: room_id },
-			{ $push: { messages: createMessage.id } }
+			{ $push: { messages: createMessage.id } },
+			{ new: true }
 		);
 
 		res.status(201).send({ message: createMessage });

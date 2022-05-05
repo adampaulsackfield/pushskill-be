@@ -235,4 +235,87 @@ describe('USER', () => {
 				});
 		});
 	});
+
+	describe('PATCH, /api/users/:user_id', () => {
+		it('should return a status of 200 when a user is updated when presented with a VALID JWT', async () => {
+			const user = {
+				username: 'Bcrypt User',
+				password: 'YECm9jCO8b',
+			};
+
+			const loginResponse = await request(app)
+				.post(`/api/users/login`)
+				.send(user);
+			const userToken = loginResponse.body.user.token;
+
+			const achievement = {
+				name: 'This is an achievement',
+				description: 'What you think this is a description',
+				url: 'https://google.com',
+			};
+
+			return request(app)
+				.patch(`/api/users/${loginResponse.body.user.id}`)
+				.set('Authorization', `Bearer ${userToken}`)
+				.send(achievement)
+				.expect(200)
+				.then((res) => {
+					expect(res.body.user).toBeInstanceOf(Object);
+					expect(res.body.user.achievements.length).toBe(1);
+				});
+		});
+
+		it('should return a status of 400 when not provided the required fields', async () => {
+			const user = {
+				username: 'Bcrypt User',
+				password: 'YECm9jCO8b',
+			};
+
+			const loginResponse = await request(app)
+				.post(`/api/users/login`)
+				.send(user);
+			const userToken = loginResponse.body.user.token;
+
+			const achievement = {
+				description: 'What you think this is a description',
+				url: 'https://google.com',
+			};
+
+			return request(app)
+				.patch(`/api/users/${loginResponse.body.user.id}`)
+				.set('Authorization', `Bearer ${userToken}`)
+				.send(achievement)
+				.expect(400)
+				.then((res) => {
+					expect(res.body).toBeInstanceOf(Object);
+					expect(res.body.message).toBe('missing required fields');
+				});
+		});
+
+		it('should return a status of 401 when not provided a valid JWT', async () => {
+			const user = {
+				username: 'Bcrypt User',
+				password: 'YECm9jCO8b',
+			};
+
+			const loginResponse = await request(app)
+				.post(`/api/users/login`)
+				.send(user);
+
+			const achievement = {
+				description: 'What you think this is a description',
+				url: 'https://google.com',
+			};
+
+			return request(app)
+				.patch(`/api/users/${loginResponse.body.user.id}`)
+				.set('Authorization', `No token`)
+				.send(achievement)
+				.expect(401)
+				.then((res) => {
+					expect(res.body).toBeInstanceOf(Object);
+					expect(res.body.message).toBe('Not authorised. No token');
+				});
+		});
+	});
 });

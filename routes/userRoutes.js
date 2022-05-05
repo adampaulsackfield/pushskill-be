@@ -1,5 +1,6 @@
 const {
 	getUsers,
+	getSingleUser,
 	loginUser,
 	registerUser,
 	patchUserAchievements,
@@ -13,6 +14,12 @@ userRouter.route('/').get(protectedRoute, getUsers).post(registerUser);
 
 userRouter.route('/login').post(loginUser);
 
-userRouter.route('/:user_id').patch(protectedRoute, patchUserAchievements);
+
+userRouter.route('/:user_id').get(protectedRoute, getSingleUser);
+
+userRouter
+	.route('/:user_id/achievements')
+	.patch(protectedRoute, patchUserAchievements);
+
 
 module.exports = userRouter;
