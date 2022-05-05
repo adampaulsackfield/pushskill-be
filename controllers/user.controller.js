@@ -117,8 +117,10 @@ const getSingleUser = async (req, res) => {
 
 	try {
 		const user = await User.findById(user_id);
-		res.status(200).send(user);
-		console.log(user);
+		if (user) {
+			res.status(200).send(user);
+			console.log(user);
+		} else throw new Error("User doesn't exist you muppet");
 	} catch (error) {
 		if (error.message) {
 			res.status(400).send({ message: error.message });
