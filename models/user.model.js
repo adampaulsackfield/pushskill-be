@@ -6,7 +6,7 @@ const achievementSchema = new mongoose.Schema(
 		url: {
 			type: 'string',
 			default:
-				'https://i.picsum.photos/id/17/200/200.jpg?hmac=9QDzoqdXorZialFww894D6BqJGalCXFLX2zNQtYENEA',
+				'https://www.kindpng.com/picc/m/24-248253_user-profile-default-image-png-clipart-png-download.png',
 		},
 		description: 'string',
 	},
