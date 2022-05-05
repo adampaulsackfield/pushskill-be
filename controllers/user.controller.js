@@ -116,7 +116,7 @@ const getSingleUser = async (req, res) => {
 	const { user_id } = req.params;
 
 	try {
-		const user = await User.findById(user_id);
+		const user = await User.findById(user_id).select('-password');
 		if (user) {
 			res.status(200).send({ user });
 		} else throw new Error('User not found, you muppet');
