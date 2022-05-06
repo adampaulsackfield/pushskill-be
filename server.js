@@ -79,8 +79,8 @@ io.on('connection', (socket) => {
 	socket.on('chat_message', ({ token, roomId, recipientId, message }) => {
 		createMessageAction(token, roomId, recipientId, message)
 			.then((res) => {
-				console.log('chat_message)', res.message);
-				socket.to(roomId).emit('receive_message', res.message);
+				console.log('chat_message', res.newMsg);
+				socket.to(roomId).emit('receive_message', res.newMsg);
 			})
 			.catch((err) => {
 				console.log('chat_message', err.message);

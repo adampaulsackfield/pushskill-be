@@ -1,4 +1,5 @@
 const Room = require('../models/room.model');
+const Message = require('../models/message.model');
 
 const isValidObjectId = require('../utils/isObjectIdValid');
 const isValidToken = require('../utils/isValidToken');
@@ -12,9 +13,16 @@ const createMessageAction = async (token, roomId, recipientId, message) => {
 		const isValidRecipientId = await isValidObjectId(recipientId);
 		const isValidRoomId = await isValidObjectId(roomId);
 
-		if (!isValidRecipientId || isValidRoomId) {
+		if (!isValidRecipientId) {
 			return reject({
-				message: 'recipientId or roomId is invalid',
+				message: 'recipientId is invalid',
+				room: null,
+			});
+		}
+
+		if (!isValidRoomId) {
+			return reject({
+				message: 'roomId is invalid',
 				room: null,
 			});
 		}
@@ -41,8 +49,10 @@ const createMessageAction = async (token, roomId, recipientId, message) => {
 			{ new: true }
 		);
 
-		return promise;
+		return resolve({ message: null, newMsg });
 	});
+
+	return promise;
 };
 
 module.exports = { createMessageAction };
