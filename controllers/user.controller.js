@@ -32,6 +32,7 @@ const registerUser = async (req, res) => {
 			avatarUrl,
 		};
 
+		console.log('user', newUser);
 		const user = await User.create(newUser);
 
 		res.status(201).send({ user });
