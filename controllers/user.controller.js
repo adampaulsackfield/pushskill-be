@@ -11,7 +11,14 @@ const getUsers = async (req, res) => {
 };
 
 const registerUser = async (req, res) => {
-	const { username, password, traits, learningInterests, avatarUrl } = req.body;
+	const {
+		username,
+		// firstName,
+		password,
+		traits,
+		learningInterests,
+		avatarUrl,
+	} = req.body;
 
 	try {
 		if (!username || !password) {
@@ -26,13 +33,13 @@ const registerUser = async (req, res) => {
 
 		let newUser = {
 			username,
+			// firstName,
 			password: await hashPassword(password),
 			traits,
 			learningInterests,
 			avatarUrl,
 		};
 
-		console.log('user', newUser);
 		const user = await User.create(newUser);
 
 		res.status(201).send({ user });

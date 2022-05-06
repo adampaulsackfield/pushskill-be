@@ -14,8 +14,16 @@ const achievementSchema = new mongoose.Schema(
 );
 
 const userSchema = mongoose.Schema({
-	username: { unique: true, required: true, type: String },
-	firstName: { type: String },
+	username: {
+		unique: true,
+		required: true,
+		type: String,
+		default: `User${Math.floor(Math.random() * 10000)}`,
+	},
+	firstName: {
+		type: String,
+		default: `NoName${Math.floor(Math.random() * 10000)}`,
+	},
 	lastName: { type: String },
 	avatarUrl: {
 		type: String,
