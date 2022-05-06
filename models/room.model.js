@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 
 const roomSchema = mongoose.Schema(
 	{
+		name: {
+			type: String,
+		},
 		creator: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'User',
