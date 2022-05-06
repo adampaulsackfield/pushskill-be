@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const achievementSchema = new mongoose.Schema(
 	{
-		name: { type: 'string', unique: true },
+		name: { type: 'string' },
 		url: {
 			type: 'string',
 			default:
@@ -27,9 +27,9 @@ const userSchema = mongoose.Schema({
 	learningInterests: { type: [String], default: [] },
 	achievements: {
 		type: [achievementSchema],
-		default: [
-			{ name: 'OG', url: '', description: 'You signed up to .push(skill)' },
-		],
+		// default: [
+		// 	{ name: 'OG', url: '', description: 'You signed up to .push(skill)' },
+		// ],
 	},
 	password: { type: String, required: true },
 });
