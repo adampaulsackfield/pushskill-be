@@ -6,6 +6,7 @@ const isValidToken = require('../utils/isValidToken');
 
 const getRoomsAction = async (token) => {
 	const promise = new Promise(async (resolve, reject) => {
+		console.log('token:', token);
 		const decoded = await isValidToken(token);
 
 		if (!decoded.id) {

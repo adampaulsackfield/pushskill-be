@@ -6,6 +6,11 @@ const isValidToken = require('../utils/isValidToken');
 
 const createMessageAction = async (token, roomId, recipientId, message) => {
 	const promise = new Promise(async (resolve, reject) => {
+		console.log('token:', token);
+		console.log('roomId:', roomId);
+		console.log('recipientId:', recipientId);
+		console.log('message:', message);
+
 		if (!roomId || !recipientId || !message) {
 			return reject({ message: 'missing required fields', room: null });
 		}
