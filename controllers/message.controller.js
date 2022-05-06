@@ -10,6 +10,7 @@ const getMessages = async (req, res) => {
 };
 
 const createMessage = async (req, res) => {
+	console.log('req:', req.body);
 	const { message, recipientId, room_id } = req.body;
 
 	try {
