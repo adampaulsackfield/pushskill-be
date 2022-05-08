@@ -5,12 +5,6 @@ const app = require('../app');
 const User = require('../models/user.model');
 const userData = require('../db/data/userData');
 
-// Valid User for Loggin In
-// {
-// 	username: 'Bcrypt User',
-// 	password: 'YECm9jCO8b',
-// };
-
 beforeEach((done) => {
 	mongoose.connect(process.env.DB_URI, () => {
 		const seedDB = async () => {
@@ -50,6 +44,44 @@ describe('USER', () => {
 				});
 		});
 
+		it('should return a status of 201 when a user is created with traits', async () => {
+			const user = {
+				username: 'Adam Sackfield',
+				password: 'D9Unvtz',
+				traits: ['Amiable', 'Tardy'],
+			};
+
+			return request(app)
+				.post(ENDPOINT)
+				.send(user)
+				.expect(201)
+				.then((res) => {
+					expect(res.body.user).toBeInstanceOf(Object);
+					expect(res.body.user.username).toEqual('Adam Sackfield');
+					expect(res.body.user.traits).toEqual(user.traits);
+				});
+		});
+
+		it('should return a status of 201 when a user is created with learning interests', async () => {
+			const user = {
+				username: 'Adam Sackfield',
+				password: 'D9Unvtz',
+				learningInterests: ['Knitting', 'Coding'],
+			};
+
+			return request(app)
+				.post(ENDPOINT)
+				.send(user)
+				.expect(201)
+				.then((res) => {
+					expect(res.body.user).toBeInstanceOf(Object);
+					expect(res.body.user.username).toEqual('Adam Sackfield');
+					expect(res.body.user.learningInterests).toEqual(
+						user.learningInterests
+					);
+				});
+		});
+
 		it('should return a status of 400 when signing up without a username', () => {
 			const user = {
 				password: 'D9Unvtz',
@@ -80,9 +112,45 @@ describe('USER', () => {
 				});
 		});
 
+		it('should return a status of 400 when traits is not an array of strings', async () => {
+			const user = {
+				username: 'Adam Sackfield',
+				password: 'D9Unvtz',
+				traits: [123, 'Tardy'],
+			};
+
+			return request(app)
+				.post(ENDPOINT)
+				.send(user)
+				.expect(400)
+				.then((res) => {
+					expect(res.body).toBeInstanceOf(Object);
+					expect(res.body.message).toEqual('traits must be an array strings');
+				});
+		});
+
+		it('should return a status of 400 when learningInterests is not an array of strings', async () => {
+			const user = {
+				username: 'Adam Sackfield',
+				password: 'D9Unvtz',
+				learningInterests: [123, 'Coding'],
+			};
+
+			return request(app)
+				.post(ENDPOINT)
+				.send(user)
+				.expect(400)
+				.then((res) => {
+					expect(res.body).toBeInstanceOf(Object);
+					expect(res.body.message).toEqual(
+						'learningInterests must be an array strings'
+					);
+				});
+		});
+
 		it('should return a status of 400 when the username is already taken', () => {
 			const user = {
-				username: 'afaye0',
+				username: 'Dolf',
 				password: 'password',
 			};
 
@@ -100,12 +168,13 @@ describe('USER', () => {
 	describe('POST /api/users/login', () => {
 		const ENDPOINT = '/api/users/login';
 
-		it('should return a status of 200 when a user is logged in successfully', () => {
-			// To enable testing of a logged in user it was required to use bcryptjs to hash a password and add that to the userData, as the last entry
+		it('should return a status of 200 when a user is logged in successfully', async () => {
 			const user = {
-				username: 'Bcrypt User',
-				password: 'YECm9jCO8b',
+				username: 'TestUser',
+				password: 'password',
 			};
+
+			await request(app).post('/api/users').send(user);
 
 			return request(app)
 				.post(ENDPOINT)
@@ -113,7 +182,7 @@ describe('USER', () => {
 				.expect(200)
 				.then((res) => {
 					expect(res.body.user).toBeInstanceOf(Object);
-					expect(res.body.user.username).toEqual('Bcrypt User');
+					expect(res.body.user.username).toEqual('TestUser');
 					expect(res.body.user).toMatchObject({
 						id: expect.any(String),
 						token: expect.any(String),
@@ -122,11 +191,15 @@ describe('USER', () => {
 				});
 		});
 
-		it('should return a status of 400 when given the wrong password', () => {
+		it('should return a status of 400 when given the wrong password', async () => {
 			const user = {
-				username: 'Bcrypt User',
-				password: 'I am wrong',
+				username: 'TestUser',
+				password: 'password',
 			};
+
+			await request(app).post('/api/users').send(user);
+
+			user.password = 'wrongpassword';
 
 			return request(app)
 				.post(ENDPOINT)
@@ -190,11 +263,12 @@ describe('USER', () => {
 
 		it('should return an array of users if presented a valid JWT', async () => {
 			const user = {
-				username: 'Bcrypt User',
-				password: 'YECm9jCO8b',
+				username: 'TestUser',
+				password: 'password',
 			};
 
-			// Here we are required to first log in the user so we can send the token on the protected route.
+			await request(app).post('/api/users').send(user);
+
 			const loginResponse = await request(app)
 				.post(`${ENDPOINT}/login`)
 				.send(user);
@@ -236,12 +310,14 @@ describe('USER', () => {
 		});
 	});
 
-	describe('PATCH, /api/users/:user_id', () => {
+	describe('PATCH /api/users/:user_id/achievements', () => {
 		it('should return a status of 200 when a user is updated when presented with a VALID JWT', async () => {
 			const user = {
-				username: 'Bcrypt User',
-				password: 'YECm9jCO8b',
+				username: 'TestUser',
+				password: 'password',
 			};
+
+			await request(app).post('/api/users').send(user);
 
 			const loginResponse = await request(app)
 				.post(`/api/users/login`)
@@ -255,7 +331,7 @@ describe('USER', () => {
 			};
 
 			return request(app)
-				.patch(`/api/users/${loginResponse.body.user.id}`)
+				.patch(`/api/users/${loginResponse.body.user.id}/achievements`)
 				.set('Authorization', `Bearer ${userToken}`)
 				.send(achievement)
 				.expect(200)
@@ -267,9 +343,11 @@ describe('USER', () => {
 
 		it('should return a status of 400 when not provided the required fields', async () => {
 			const user = {
-				username: 'Bcrypt User',
-				password: 'YECm9jCO8b',
+				username: 'TestUser',
+				password: 'password',
 			};
+
+			await request(app).post('/api/users').send(user);
 
 			const loginResponse = await request(app)
 				.post(`/api/users/login`)
@@ -282,7 +360,7 @@ describe('USER', () => {
 			};
 
 			return request(app)
-				.patch(`/api/users/${loginResponse.body.user.id}`)
+				.patch(`/api/users/${loginResponse.body.user.id}/achievements`)
 				.set('Authorization', `Bearer ${userToken}`)
 				.send(achievement)
 				.expect(400)
@@ -294,9 +372,11 @@ describe('USER', () => {
 
 		it('should return a status of 401 when not provided a valid JWT', async () => {
 			const user = {
-				username: 'Bcrypt User',
-				password: 'YECm9jCO8b',
+				username: 'TestUser',
+				password: 'password',
 			};
+
+			await request(app).post('/api/users').send(user);
 
 			const loginResponse = await request(app)
 				.post(`/api/users/login`)
@@ -308,7 +388,7 @@ describe('USER', () => {
 			};
 
 			return request(app)
-				.patch(`/api/users/${loginResponse.body.user.id}`)
+				.patch(`/api/users/${loginResponse.body.user.id}/achievements`)
 				.set('Authorization', `No token`)
 				.send(achievement)
 				.expect(401)
@@ -318,4 +398,65 @@ describe('USER', () => {
 				});
 		});
 	});
+
+	describe('GET /api/users/:user_id', () => {
+		const ENDPOINT = '/api/users';
+
+		it('should return a status of 200 if presented a valid JWT and UserID ', async () => {
+			const user = {
+				username: 'TestUser',
+				password: 'password',
+			};
+
+			await request(app).post(ENDPOINT).send(user);
+
+			const loginResponse = await request(app)
+				.post(`${ENDPOINT}/login`)
+				.send(user);
+			const userToken = loginResponse.body.user.token;
+
+			const usersResponse = await request(app)
+				.get(ENDPOINT)
+				.set('Authorization', `Bearer ${userToken}`);
+
+			return request(app)
+				.get(`${ENDPOINT}/${usersResponse.body.users[0]._id}`)
+				.set('Authorization', `Bearer ${userToken}`)
+				.expect(200)
+				.then((res) => {
+					expect(res.body.user).toBeInstanceOf(Object);
+					expect(res.body.user.username).toEqual('Dolf');
+				});
+		});
+	});
+
+	describe('GET /api/users/matches', () => {
+		it('should return a status of 200 and matched pairs if presented with a valid JWT', async () => {
+			const ENDPOINT = '/api/users/matches';
+
+			const user = {
+				username: 'TestUser',
+				password: 'password',
+				traits: ['Fish', 'Amiable'],
+			};
+
+			await request(app).post('/api/users').send(user);
+
+			const loginResponse = await request(app)
+				.post(`/api/users/login`)
+				.send(user);
+			const userToken = loginResponse.body.user.token;
+
+			return request(app)
+				.get(ENDPOINT)
+				.set('Authorization', `Bearer ${userToken}`)
+				.expect(200)
+				.then((res) => {
+					expect(res.body.users).toBeInstanceOf(Array);
+					expect(res.body.users.length).toBe(42);
+				});
+		});
+	});
+
+	describe('GET /api/users/matches/:user_id', () => {});
 });

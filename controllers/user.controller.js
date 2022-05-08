@@ -14,14 +14,7 @@ const getUsers = async (req, res) => {
 };
 
 const registerUser = async (req, res) => {
-	const {
-		username,
-		// firstName,
-		password,
-		traits,
-		learningInterests,
-		avatarUrl,
-	} = req.body;
+	const { username, password, traits, learningInterests, avatarUrl } = req.body;
 
 	try {
 		if (!username || !password) {
@@ -34,9 +27,24 @@ const registerUser = async (req, res) => {
 			throw new Error('user already exists');
 		}
 
+		if (traits?.length) {
+			traits.forEach((trait) => {
+				if (typeof trait !== 'string') {
+					throw new Error('traits must be an array strings');
+				}
+			});
+		}
+
+		if (learningInterests?.length) {
+			learningInterests.forEach((interest) => {
+				if (typeof interest !== 'string') {
+					throw new Error('learningInterests must be an array strings');
+				}
+			});
+		}
+
 		let newUser = {
 			username,
-			// firstName,
 			password: await hashPassword(password),
 			traits,
 			learningInterests,
@@ -158,6 +166,7 @@ const getSingleUser = async (req, res) => {
 	}
 };
 
+// TODO - This can be turned into a general patch entire profile function
 const patchUserTraits = async (req, res) => {
 	const { traits } = req.body;
 
