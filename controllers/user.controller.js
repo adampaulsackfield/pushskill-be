@@ -1,8 +1,11 @@
-const User = require('../models/user.model.js');
+const User = require('../models/user.model');
+const Room = require('../models/room.model');
+const mongoose = require('mongoose');
 
 const hashPassword = require('../utils/hashPassword');
 const comparePassword = require('../utils/comparePassword');
 const generateToken = require('../utils/generateToken');
+const isValidObjectId = require('../utils/isObjectIdValid');
 
 const getUsers = async (req, res) => {
 	const users = await User.find();
@@ -97,6 +100,12 @@ const patchUserAchievements = async (req, res) => {
 			throw new Error('missing required fields');
 		}
 
+		const isValidObjId = isValidObjectId(user_id);
+
+		if (!isValidObjId) {
+			throw new Error('User ID is not valid');
+		}
+
 		const achievement = {
 			name,
 			description,
@@ -127,10 +136,138 @@ const getSingleUser = async (req, res) => {
 	const { user_id } = req.params;
 
 	try {
+		const isValidObjId = isValidObjectId(user_id);
+
+		if (!isValidObjId) {
+			throw new Error('User ID is not valid');
+		}
+
 		const user = await User.findById(user_id).select('-password');
-		if (user) {
-			res.status(200).send({ user });
-		} else throw new Error('User not found, you muppet');
+
+		if (!user) {
+			throw new Error('User not found, you muppet');
+		}
+
+		res.status(200).send({ user });
+	} catch (error) {
+		if (error.message) {
+			res.status(404).send({ message: error.message });
+		} else {
+			res.status(500).send({ message: 'server error' });
+		}
+	}
+};
+
+const patchUserTraits = async (req, res) => {
+	const { traits } = req.body;
+
+	try {
+		if (!traits?.length) {
+			throw new Error('at least one trait is required');
+		}
+
+		traits.forEach((trait) => {
+			if (typeof trait !== 'string') {
+				throw new Error('traits must be strings');
+			}
+		});
+
+		const user = await User.findByIdAndUpdate(
+			{ _id: req.user.id },
+			{ $push: { traits: traits } },
+			{ new: true }
+		);
+
+		if (!user) {
+			throw new Error("User doesn't exist");
+		}
+
+		res.status(200).send({ user });
+	} catch (error) {
+		if (error.message) {
+			res.status(404).send({ message: error.message });
+		} else {
+			res.status(500).send({ message: 'server error' });
+		}
+	}
+};
+
+const generateMatches = async (req, res) => {
+	try {
+		// Returns all but current user with matching traits
+		const users = await User.find({
+			_id: { $nin: req.user.id },
+			traits: { $in: req.user.traits },
+		});
+
+		if (!users) {
+			throw new Error('Users not found, something went wrong');
+		}
+
+		res.status(200).send({ users });
+	} catch (error) {
+		if (error.message) {
+			res.status(404).send({ message: error.message });
+		} else {
+			res.status(500).send({ message: 'server error' });
+		}
+	}
+};
+
+const sendMatchRequest = async (req, res) => {
+	const { user_id } = req.params;
+
+	try {
+		if (!user_id) {
+			throw new Error('User ID is required');
+		}
+
+		const isValidObjId = isValidObjectId(user_id);
+
+		if (!isValidObjId) {
+			throw new Error('User ID is not valid');
+		}
+
+		if (req.user.isPaired) {
+			throw new Error(
+				'You already have a pair, please leave this pairing to join another'
+			);
+		}
+
+		const users = await User.find({
+			_id: user_id,
+			traits: { $in: req.user.traits },
+			isPaired: false,
+		});
+
+		if (users.length !== 1) {
+			throw new Error(
+				"Unable to pair with user, traits don't match or user is already paired"
+			);
+		}
+
+		const room = await Room.create({
+			creator: req.user.id,
+			member: user_id,
+		});
+
+		if (!room) {
+			throw new Error('Something went wrong creating a room');
+		}
+
+		await User.updateMany(
+			{
+				_id: {
+					$in: [
+						mongoose.Types.ObjectId(req.user.id),
+						mongoose.Types.ObjectId(user_id),
+					],
+				},
+			},
+			{ $set: { isPaired: true } }
+		);
+
+		res.status(201).send({ room });
 	} catch (error) {
 		if (error.message) {
 			res.status(404).send({ message: error.message });
@@ -146,4 +283,7 @@ module.exports = {
 	loginUser,
 	patchUserAchievements,
 	getSingleUser,
+	patchUserTraits,
+	generateMatches,
+	sendMatchRequest,
 };

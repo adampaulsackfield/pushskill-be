@@ -4,6 +4,7 @@ const roomSchema = mongoose.Schema(
 	{
 		name: {
 			type: String,
+			default: 'Unnamed',
 		},
 		creator: {
 			type: mongoose.Schema.Types.ObjectId,
@@ -17,6 +18,7 @@ const roomSchema = mongoose.Schema(
 			{
 				type: mongoose.Schema.Types.ObjectId,
 				ref: 'Message',
+				default: [],
 			},
 		],
 	},
