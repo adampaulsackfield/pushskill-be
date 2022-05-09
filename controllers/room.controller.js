@@ -66,6 +66,7 @@ const getRoom = async (req, res) => {
 };
 
 const getRoomMessages = async (req, res) => {
+	console.log('*****');
 	const { room_id } = req.params;
 
 	const isObjectId = isValidObjectId(room_id);

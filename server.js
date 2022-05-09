@@ -26,9 +26,9 @@ io.on('connection', (socket) => {
 
 	console.log('socketID: ', socket.id);
 
-	socket.on('join_room', ({ roomId }) => {
+	socket.on('join_room', ({ room_id }) => {
 		console.log('joining room...');
-		socket.join(roomId);
+		socket.join(room_id);
 
 		socket.emit('notification', 'Room Joined');
 	});
@@ -47,15 +47,37 @@ io.on('connection', (socket) => {
 			});
 	});
 
-	socket.on('chat_message', ({ token, roomId, recipientId, message }) => {
-		createMessageAction(token, roomId, recipientId, message)
-			.then((res) => {
-				console.log('chat_message', res.newMsg);
-				socket.to(roomId).emit('receive_message', res.newMsg);
-			})
-			.catch((err) => {
-				console.log('chat_message', err.message);
-				socket.emit('error_message', err.message);
-			});
+	socket.on('list_rooms', () => {
+		const rooms = Array.from(io.sockets.adapter.rooms);
+
+		const filtered = rooms.filter((room) => !room[1].has(room[0]));
+
+		const res = filtered.map((i) => i[0]);
+
+		console.log('rooms', res);
+		socket.emit('rooms_list', res);
 	});
+
+	socket.on('chat_message', ({ senderId, room_id, recipientId, message }) => {
+		const newMsg = {
+			room_id,
+			message,
+			senderId,
+			recipientId,
+		};
+		console.log(newMsg);
+
+		socket.to(room_id).emit('receive_message', newMsg);
+	});
+	// createMessageAction(token, roomId, recipientId, message)
+	// 		.then((res) => {
+	// 			console.log('ROOM_ID', roomId);
+	// 			console.log('chat_message', res.newMsg);
+	// 			socket.to(roomId).emit('receive_message', res.newMsg);
+	// 		})
+	// 		.catch((err) => {
+	// 			console.log('chat_message', err.message);
+	// 			socket.emit('error_message', err.message);
+	// 		});
+	// });
 });
