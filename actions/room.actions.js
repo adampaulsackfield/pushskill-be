@@ -6,7 +6,6 @@ const isValidToken = require('../utils/isValidToken');
 
 const getRoomsAction = async (token) => {
 	const promise = new Promise(async (resolve, reject) => {
-		console.log('token:', token);
 		const decoded = await isValidToken(token);
 
 		if (!decoded.id) {
@@ -31,18 +30,8 @@ const getRoomsAction = async (token) => {
 };
 
 // Promisified Version
-const createRoomAction = async (token, recipientId, name) => {
+const isValidJWTToken = async (token) => {
 	const promise = new Promise(async (resolve, reject) => {
-		const isValidId = isValidObjectId(recipientId);
-
-		if (!recipientId) {
-			return reject({ message: 'missing required fields', room: null });
-		}
-
-		if (!isValidId) {
-			return reject({ message: 'recipientId is invalid', room: null });
-		}
-
 		// isValidToken could probably be refactored
 		const decoded = await isValidToken(token);
 
@@ -103,7 +92,7 @@ const getRoomAction = async (token, roomId) => {
 const getRoomMessagesAction = async (token, roomId) => {
 	const promise = new Promise(async (resolve, reject) => {
 		if (!roomId) {
-			return reject({ message: 'missing required fields', room: null });
+			return reject({ message: 'missing required fields: roomId', room: null });
 		}
 
 		const isValidId = await isValidObjectId(roomId);
@@ -125,6 +114,8 @@ const getRoomMessagesAction = async (token, roomId) => {
 			return reject({ message: 'User not found', room: null });
 		}
 
+		console.log('room.messages');
+		console.log(room.messages);
 		return resolve({ message: null, messages: room.messages });
 	});
 	return promise;
@@ -132,7 +123,7 @@ const getRoomMessagesAction = async (token, roomId) => {
 
 module.exports = {
 	getRoomsAction,
-	createRoomAction,
+	isValidJWTToken,
 	getRoomAction,
 	getRoomMessagesAction,
 };

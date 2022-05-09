@@ -207,6 +207,7 @@ const generateMatches = async (req, res) => {
 		const users = await User.find({
 			_id: { $nin: req.user.id },
 			traits: { $in: req.user.traits },
+			isPaired: false,
 		});
 
 		if (!users) {
@@ -254,7 +255,6 @@ const sendMatchRequest = async (req, res) => {
 				"Unable to pair with user, traits don't match or user is already paired"
 			);
 		}
-
 		const room = await Room.create({
 			creator: req.user.id,
 			member: user_id,
