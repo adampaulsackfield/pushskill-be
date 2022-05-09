@@ -173,7 +173,7 @@ const patchUserTraits = async (req, res) => {
 
 	try {
 		if (!traits?.length) {
-			throw new Error('at least one trait is required');
+			res.status(200).send({ users: [] });
 		}
 
 		traits.forEach((trait) => {
@@ -204,6 +204,9 @@ const patchUserTraits = async (req, res) => {
 
 const generateMatches = async (req, res) => {
 	try {
+		if (req.user.isPaired) {
+			return res.status(200).send({ users: [] });
+		}
 		// Returns all but current user with matching traits
 		const users = await User.find({
 			_id: { $nin: req.user.id },
