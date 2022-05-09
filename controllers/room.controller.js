@@ -3,8 +3,8 @@ const isValidObjectId = require('../utils/isObjectIdValid');
 
 const getRooms = async (req, res) => {
 	const rooms = await Room.find({
-		// FIXME: potential issues with 'all', if so switch to $or
-		$all: [{ creator: req.user.id }, { member: req.user.id }],
+		// Fixed - this does need to be $or
+		$or: [{ creator: req.user.id }, { member: req.user.id }],
 	});
 
 	res.status(200).send({ rooms });

@@ -39,6 +39,8 @@ const userSchema = mongoose.Schema({
 		// 	{ name: 'OG', url: '', description: 'You signed up to .push(skill)' },
 		// ],
 	},
+	isPaired: { type: Boolean, default: false },
+	notifications: { type: [mongoose.Schema.Types.ObjectId], ref: 'Message' },
 	password: { type: String, required: true },
 });
 
