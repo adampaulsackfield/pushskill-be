@@ -87,6 +87,7 @@ const loginUser = async (req, res) => {
 			username: user.username,
 			id: user.id,
 			token: generateToken(user.id),
+			roomId: user.roomId,
 		};
 
 		res.status(200).send({ user: validatedUser });
@@ -264,6 +265,9 @@ const sendMatchRequest = async (req, res) => {
 			throw new Error('Something went wrong creating a room');
 		}
 
+		console.log('user.controller .', room.id);
+		console.log('user.controller ._', room._id);
+
 		await User.updateMany(
 			{
 				_id: {
@@ -273,9 +277,11 @@ const sendMatchRequest = async (req, res) => {
 					],
 				},
 			},
-			{ $set: { isPaired: true } },
-			{ $set: { roomId: room._id } }
+			{ $set: { isPaired: true } }
 		);
+
+		await User.findByIdAndUpdate(req.user.id, { $set: { roomId: room.id } });
+		await User.findByIdAndUpdate(user_id, { $set: { roomId: room.id } });
 
 		res.status(201).send({ room });
 	} catch (error) {
