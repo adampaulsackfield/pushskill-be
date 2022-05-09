@@ -20,7 +20,7 @@ const getRoomsAction = async (token) => {
 
 		const rooms = await Room.find({
 			// FIXME: potential issues with 'all', if so switch to $or
-			$all: [{ creator: user.id }, { member: user.id }],
+			$or: [{ creator: user.id }, { member: user.id }],
 		});
 
 		return resolve({ message: null, rooms });
