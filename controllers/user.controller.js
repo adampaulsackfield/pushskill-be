@@ -273,7 +273,8 @@ const sendMatchRequest = async (req, res) => {
 					],
 				},
 			},
-			{ $set: { isPaired: true } }
+			{ $set: { isPaired: true } },
+			{ $set: { roomId: room._id } }
 		);
 
 		res.status(201).send({ room });

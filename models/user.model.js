@@ -41,6 +41,7 @@ const userSchema = mongoose.Schema({
 	},
 	isPaired: { type: Boolean, default: false },
 	notifications: { type: [mongoose.Schema.Types.ObjectId], ref: 'Message' },
+	roomId: { type: [mongoose.Schema.Types.ObjectId], ref: 'Room' },
 	password: { type: String, required: true },
 });
 
