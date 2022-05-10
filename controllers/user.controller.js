@@ -236,8 +236,8 @@ const generateMatches = async (req, res) => {
 };
 
 const acceptMatch = async (req, res) => {
-	console.log('accept match');
 	const { user_id } = req.params;
+	const { sender_id } = req.body;
 
 	try {
 		if (!user_id) {
@@ -257,8 +257,8 @@ const acceptMatch = async (req, res) => {
 		}
 
 		const room = await Room.create({
-			creator: req.user.id,
-			member: user_id,
+			creator: sender_id,
+			member: req.user.id,
 		});
 
 		if (!room) {
@@ -270,7 +270,7 @@ const acceptMatch = async (req, res) => {
 				_id: {
 					$in: [
 						mongoose.Types.ObjectId(req.user.id),
-						mongoose.Types.ObjectId(user_id),
+						mongoose.Types.ObjectId(sender_id),
 					],
 				},
 			},
@@ -278,7 +278,8 @@ const acceptMatch = async (req, res) => {
 		);
 
 		await User.findByIdAndUpdate(req.user.id, { $set: { roomId: room.id } });
-		await User.findByIdAndUpdate(user_id, { $set: { roomId: room.id } });
+		await User.findByIdAndUpdate(sender_id, { $set: { roomId: room.id } });
+		await User.findByIdAndUpdate(req.user.id, { $set: { notifications: [] } });
 
 		res.status(201).send({ room });
 	} catch (error) {
