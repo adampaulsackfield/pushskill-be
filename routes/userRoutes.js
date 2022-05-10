@@ -22,7 +22,7 @@ userRouter.route('/matches').get(protectedRoute, generateMatches);
 userRouter
 	.route('/matches/:user_id')
 	.post(protectedRoute, sendMatchRequest)
-	.get(protectedRoute, acceptMatch);
+	.patch(protectedRoute, acceptMatch);
 
 userRouter.route('/:user_id').get(protectedRoute, getSingleUser);
 
