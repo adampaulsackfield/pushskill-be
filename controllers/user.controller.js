@@ -236,6 +236,7 @@ const generateMatches = async (req, res) => {
 };
 
 const acceptMatch = async (req, res) => {
+	console.log('accept match');
 	const { user_id } = req.params;
 
 	try {

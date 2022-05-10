@@ -40,7 +40,7 @@ const userSchema = mongoose.Schema({
 		],
 	},
 	isPaired: { type: Boolean, default: false },
-	notifications: { type: [String] },
+	notifications: { type: [Object] },
 	roomId: { type: String, default: '' },
 	password: { type: String, required: true },
 });
