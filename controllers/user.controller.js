@@ -358,7 +358,19 @@ const declineMatch = async (req, res) => {
 			throw new Error('User ID is not valid');
 		}
 
-		await User.findByIdAndUpdate(req.user.id, { $set: { notifications: [] } });
+		const user = await User.findById(req.user.id);
+
+		if (!user) {
+			throw new Error('User not found');
+		}
+
+		const updatedNotifications = user.notifications.filter(
+			(notification) => notification.user_id !== sender_id
+		);
+
+		user.notifications = updatedNotifications;
+
+		user.save();
 
 		res.status(200).send({ message: 'Pair declined' });
 	} catch (error) {
