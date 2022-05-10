@@ -2,13 +2,7 @@ const { Server } = require('socket.io');
 const http = require('http');
 const PORT = process.env.PORT || 9090;
 const app = require('./app');
-const {
-	getRoomsAction,
-	isValidJWTToken,
-	getRoomMessagesAction,
-} = require('./actions/room.actions');
-const { createMessageAction } = require('./actions/message.action');
-const isValidToken = require('./utils/isValidToken');
+const { getRoomMessagesAction } = require('./actions/room.actions');
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -69,15 +63,4 @@ io.on('connection', (socket) => {
 
 		socket.to(room_id).emit('receive_message', newMsg);
 	});
-	// createMessageAction(token, roomId, recipientId, message)
-	// 		.then((res) => {
-	// 			console.log('ROOM_ID', roomId);
-	// 			console.log('chat_message', res.newMsg);
-	// 			socket.to(roomId).emit('receive_message', res.newMsg);
-	// 		})
-	// 		.catch((err) => {
-	// 			console.log('chat_message', err.message);
-	// 			socket.emit('error_message', err.message);
-	// 		});
-	// });
 });

@@ -53,7 +53,14 @@ const registerUser = async (req, res) => {
 
 		const user = await User.create(newUser);
 
-		res.status(201).send({ user });
+		let validatedUser = {
+			username: user.username,
+			id: user.id,
+			token: generateToken(user.id),
+			roomId: user.roomId,
+		};
+
+		res.status(201).send({ user: validatedUser });
 	} catch (error) {
 		if (error.message) {
 			res.status(400).send({ message: error.message });
