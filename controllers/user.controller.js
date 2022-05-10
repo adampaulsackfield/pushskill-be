@@ -235,6 +235,58 @@ const generateMatches = async (req, res) => {
 	}
 };
 
+const sendMatchRequest = async (req, res) => {
+	const { user_id } = req.params;
+
+	try {
+		if (!user_id) {
+			throw new Error('User ID is required');
+		}
+
+		const isValidObjId = isValidObjectId(user_id);
+
+		if (!isValidObjId) {
+			throw new Error('User ID is not valid');
+		}
+
+		if (req.user.isPaired) {
+			throw new Error(
+				'You already have a pair, please leave this pairing to join another'
+			);
+		}
+
+		const users = await User.find({
+			_id: user_id,
+			traits: { $in: req.user.traits },
+			isPaired: false,
+		});
+
+		if (users.length !== 1) {
+			throw new Error(
+				"Unable to pair with user, traits don't match or user is already paired"
+			);
+		}
+
+		const request = await User.findByIdAndUpdate(
+			{ _id: user_id },
+			{
+				$push: {
+					notifications: { username: req.user.username, user_id: req.user.id },
+				},
+			},
+			{ new: true }
+		);
+
+		res.status(201).send({ request });
+	} catch (error) {
+		if (error.message) {
+			res.status(404).send({ message: error.message });
+		} else {
+			res.status(500).send({ message: 'server error' });
+		}
+	}
+};
+
 const acceptMatch = async (req, res) => {
 	const { user_id } = req.params;
 	const { sender_id } = req.body;
@@ -291,8 +343,9 @@ const acceptMatch = async (req, res) => {
 	}
 };
 
-const sendMatchRequest = async (req, res) => {
+const declineMatch = async (req, res) => {
 	const { user_id } = req.params;
+	const { sender_id } = req.body;
 
 	try {
 		if (!user_id) {
@@ -305,35 +358,9 @@ const sendMatchRequest = async (req, res) => {
 			throw new Error('User ID is not valid');
 		}
 
-		if (req.user.isPaired) {
-			throw new Error(
-				'You already have a pair, please leave this pairing to join another'
-			);
-		}
+		await User.findByIdAndUpdate(req.user.id, { $set: { notifications: [] } });
 
-		const users = await User.find({
-			_id: user_id,
-			traits: { $in: req.user.traits },
-			isPaired: false,
-		});
-
-		if (users.length !== 1) {
-			throw new Error(
-				"Unable to pair with user, traits don't match or user is already paired"
-			);
-		}
-
-		const request = await User.findByIdAndUpdate(
-			{ _id: user_id },
-			{
-				$push: {
-					notifications: { username: req.user.username, user_id: req.user.id },
-				},
-			},
-			{ new: true }
-		);
-
-		res.status(201).send({ request });
+		res.status(200).send({ message: 'Pair declined' });
 	} catch (error) {
 		if (error.message) {
 			res.status(404).send({ message: error.message });
@@ -353,4 +380,5 @@ module.exports = {
 	generateMatches,
 	sendMatchRequest,
 	acceptMatch,
+	declineMatch,
 };
