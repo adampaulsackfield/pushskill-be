@@ -35,9 +35,9 @@ const userSchema = mongoose.Schema({
 	learningInterests: { type: [String], default: [] },
 	achievements: {
 		type: [achievementSchema],
-		// default: [
-		// 	{ name: 'OG', url: '', description: 'You signed up to .push(skill)' },
-		// ],
+		default: [
+			{ name: 'OG', url: '', description: 'You signed up to .push(skill)' },
+		],
 	},
 	isPaired: { type: Boolean, default: false },
 	notifications: { type: [mongoose.Schema.Types.ObjectId], ref: 'Message' },
