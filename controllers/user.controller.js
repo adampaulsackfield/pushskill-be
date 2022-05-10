@@ -235,6 +235,60 @@ const generateMatches = async (req, res) => {
 	}
 };
 
+const acceptMatch = async (req, res) => {
+	const { user_id } = req.params;
+
+	try {
+		if (!user_id) {
+			throw new Error('User ID is required');
+		}
+
+		const isValidObjId = isValidObjectId(user_id);
+
+		if (!isValidObjId) {
+			throw new Error('User ID is not valid');
+		}
+
+		if (req.user.isPaired) {
+			throw new Error(
+				'You already have a pair, please leave this pairing to join another'
+			);
+		}
+
+		const room = await Room.create({
+			creator: req.user.id,
+			member: user_id,
+		});
+
+		if (!room) {
+			throw new Error('Something went wrong creating a room');
+		}
+
+		await User.updateMany(
+			{
+				_id: {
+					$in: [
+						mongoose.Types.ObjectId(req.user.id),
+						mongoose.Types.ObjectId(user_id),
+					],
+				},
+			},
+			{ $set: { isPaired: true } }
+		);
+
+		await User.findByIdAndUpdate(req.user.id, { $set: { roomId: room.id } });
+		await User.findByIdAndUpdate(user_id, { $set: { roomId: room.id } });
+
+		res.status(201).send({ room });
+	} catch (error) {
+		if (error.message) {
+			res.status(404).send({ message: error.message });
+		} else {
+			res.status(500).send({ message: 'server error' });
+		}
+	}
+};
+
 const sendMatchRequest = async (req, res) => {
 	const { user_id } = req.params;
 
@@ -266,35 +320,7 @@ const sendMatchRequest = async (req, res) => {
 				"Unable to pair with user, traits don't match or user is already paired"
 			);
 		}
-		// const room = await Room.create({
-		// 	creator: req.user.id,
-		// 	member: user_id,
-		// });
 
-		// if (!room) {
-		// 	throw new Error('Something went wrong creating a room');
-		// }
-
-		// console.log('user.controller .', room.id);
-		// console.log('user.controller ._', room._id);
-
-		//TODO implement once request accepted
-
-		// await User.updateMany(
-		// 	{
-		// 		_id: {
-		// 			$in: [
-		// 				mongoose.Types.ObjectId(req.user.id),
-		// 				mongoose.Types.ObjectId(user_id),
-		// 			],
-		// 		},
-		// 	},
-		// 	{ $set: { isPaired: true } }
-		// );
-
-		// await User.findByIdAndUpdate(req.user.id, { $set: { roomId: room.id } });
-		// await User.findByIdAndUpdate(user_id, { $set: { roomId: room.id } });
-		console.log(user_id);
 		const request = await User.findByIdAndUpdate(
 			{ _id: user_id },
 			{
@@ -304,7 +330,7 @@ const sendMatchRequest = async (req, res) => {
 			},
 			{ new: true }
 		);
-		console.log(request);
+
 		res.status(201).send({ request });
 	} catch (error) {
 		if (error.message) {
@@ -324,4 +350,5 @@ module.exports = {
 	patchUserTraits,
 	generateMatches,
 	sendMatchRequest,
+	acceptMatch,
 };
