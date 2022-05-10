@@ -266,34 +266,46 @@ const sendMatchRequest = async (req, res) => {
 				"Unable to pair with user, traits don't match or user is already paired"
 			);
 		}
-		const room = await Room.create({
-			creator: req.user.id,
-			member: user_id,
-		});
+		// const room = await Room.create({
+		// 	creator: req.user.id,
+		// 	member: user_id,
+		// });
 
-		if (!room) {
-			throw new Error('Something went wrong creating a room');
-		}
+		// if (!room) {
+		// 	throw new Error('Something went wrong creating a room');
+		// }
 
-		console.log('user.controller .', room.id);
-		console.log('user.controller ._', room._id);
+		// console.log('user.controller .', room.id);
+		// console.log('user.controller ._', room._id);
 
-		await User.updateMany(
+		//TODO implement once request accepted
+
+		// await User.updateMany(
+		// 	{
+		// 		_id: {
+		// 			$in: [
+		// 				mongoose.Types.ObjectId(req.user.id),
+		// 				mongoose.Types.ObjectId(user_id),
+		// 			],
+		// 		},
+		// 	},
+		// 	{ $set: { isPaired: true } }
+		// );
+
+		// await User.findByIdAndUpdate(req.user.id, { $set: { roomId: room.id } });
+		// await User.findByIdAndUpdate(user_id, { $set: { roomId: room.id } });
+		console.log(user_id);
+		const request = await User.findByIdAndUpdate(
+			{ _id: user_id },
 			{
-				_id: {
-					$in: [
-						mongoose.Types.ObjectId(req.user.id),
-						mongoose.Types.ObjectId(user_id),
-					],
+				$push: {
+					notifications: { username: req.user.username, user_id: req.user.id },
 				},
 			},
-			{ $set: { isPaired: true } }
+			{ new: true }
 		);
-
-		await User.findByIdAndUpdate(req.user.id, { $set: { roomId: room.id } });
-		await User.findByIdAndUpdate(user_id, { $set: { roomId: room.id } });
-
-		res.status(201).send({ room });
+		console.log(request);
+		res.status(201).send({ request });
 	} catch (error) {
 		if (error.message) {
 			res.status(404).send({ message: error.message });

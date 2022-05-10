@@ -17,7 +17,7 @@ userRouter.route('/').get(protectedRoute, getUsers).post(registerUser);
 
 userRouter.route('/login').post(loginUser);
 userRouter.route('/matches').get(protectedRoute, generateMatches);
-userRouter.route('/matches/:user_id').get(protectedRoute, sendMatchRequest);
+userRouter.route('/matches/:user_id').post(protectedRoute, sendMatchRequest);
 
 userRouter.route('/:user_id').get(protectedRoute, getSingleUser);
 
