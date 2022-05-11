@@ -18,7 +18,6 @@ const userSchema = mongoose.Schema({
 		unique: true,
 		required: true,
 		type: String,
-		default: `User${Math.floor(Math.random() * 10000)}`,
 	},
 	firstName: {
 		type: String,
