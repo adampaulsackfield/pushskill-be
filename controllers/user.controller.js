@@ -114,8 +114,6 @@ const patchUserAchievements = async (req, res) => {
 	} = req.body;
 	const { user_id } = req.params;
 
-	console.log();
-
 	try {
 		if (!name || !description) {
 			throw new Error('missing required fields');
@@ -345,6 +343,12 @@ const acceptMatch = async (req, res) => {
 		await User.findByIdAndUpdate(req.user.id, { $set: { roomId: room.id } });
 		await User.findByIdAndUpdate(sender_id, { $set: { roomId: room.id } });
 		await User.findByIdAndUpdate(req.user.id, { $set: { notifications: [] } });
+		await User.findByIdAndUpdate(req.user.id, {
+			$set: { partnerId: sender_id },
+		});
+		await User.findByIdAndUpdate(sender_id, {
+			$set: { partnerId: req.user.id },
+		});
 
 		res.status(201).send({ room });
 	} catch (error) {

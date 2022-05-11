@@ -43,6 +43,7 @@ const userSchema = mongoose.Schema({
 	notifications: { type: [Object] },
 	roomId: { type: String, default: '' },
 	password: { type: String, required: true },
+	partnerId: { type: String, default: '' },
 });
 
 module.exports = mongoose.model('User', userSchema);
