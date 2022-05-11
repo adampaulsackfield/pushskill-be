@@ -26,6 +26,7 @@ const createMessage = async (req, res) => {
 		};
 
 		const createMessage = await Message.create(newMsg);
+
 		await Room.findByIdAndUpdate(
 			{ _id: room_id },
 			{ $push: { messages: createMessage.id } },
