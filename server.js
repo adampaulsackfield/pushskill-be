@@ -63,4 +63,17 @@ io.on('connection', (socket) => {
 
 		socket.to(room_id).emit('receive_message', newMsg);
 	});
+
+	// Typing Events
+	socket.on('user_typing_start', ({ room_id }) => {
+		console.log('typing event start triggered', room_id);
+
+		socket.to(room_id).emit('user_typing');
+	});
+
+	socket.on('user_typing_end', ({ room_id }) => {
+		console.log('typing event end triggered', room_id);
+
+		socket.to(room_id).emit('stop_typing');
+	});
 });

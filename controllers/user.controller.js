@@ -134,6 +134,12 @@ const patchUserAchievements = async (req, res) => {
 			{ new: true }
 		);
 
+		const user2 = await User.findByIdAndUpdate(
+			{ _id: req.user.id },
+			{ $push: { achievements: achievement } },
+			{ new: true }
+		);
+
 		if (!user) {
 			throw new Error("User doesn't exist");
 		}
