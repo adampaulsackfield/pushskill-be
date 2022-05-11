@@ -108,11 +108,16 @@ const loginUser = async (req, res) => {
 };
 
 const patchUserAchievements = async (req, res) => {
-	const { name, description, url } = req.body;
+	const {
+		achievement: { name, description, url },
+		both,
+	} = req.body;
 	const { user_id } = req.params;
 
+	console.log();
+
 	try {
-		if (!name || !description || !url) {
+		if (!name || !description) {
 			throw new Error('missing required fields');
 		}
 
@@ -134,11 +139,13 @@ const patchUserAchievements = async (req, res) => {
 			{ new: true }
 		);
 
-		const user2 = await User.findByIdAndUpdate(
-			{ _id: req.user.id },
-			{ $push: { achievements: achievement } },
-			{ new: true }
-		);
+		if (both) {
+			await User.findByIdAndUpdate(
+				{ _id: req.user.id },
+				{ $push: { achievements: achievement } },
+				{ new: true }
+			);
+		}
 
 		if (!user) {
 			throw new Error("User doesn't exist");
