@@ -401,8 +401,6 @@ const declineMatch = async (req, res) => {
 const addOG = async (req, res) => {
 	const { achievement } = req.body;
 
-	console.log('running og');
-
 	try {
 		if (!achievement) {
 			throw new Error('Achievement is required');
@@ -412,6 +410,9 @@ const addOG = async (req, res) => {
 			$push: { achievements: achievement },
 		});
 		await User.findByIdAndUpdate(req.body.user, { $set: { isOg: true } });
+		await User.findByIdAndUpdate(req.body.user, {
+			$set: { awardableAchievements: [] },
+		}); // TODO this is a hack and we should remove the achievement that has been awarded
 
 		res.status(200).send({ message: 'Achievement OG Earned' });
 	} catch (error) {

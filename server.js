@@ -69,10 +69,10 @@ io.on('connection', (socket) => {
 				.then((res) => {
 					console.log(res);
 					console.log('socketID: ', socket.id);
+					socket.to(room_id).emit('receive_message', newMsg);
 				})
 				.catch((err) => {
 					console.log(err);
-					socket.to(room_id).emit('receive_message', newMsg);
 				});
 
 			// console.log('socketID: ', socket.id);
