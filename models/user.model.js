@@ -34,15 +34,28 @@ const userSchema = mongoose.Schema({
 	learningInterests: { type: [String], default: [] },
 	achievements: {
 		type: [achievementSchema],
-		default: [
-			{ name: 'OG', url: '', description: 'You signed up to .push(skill)' },
-		],
+		default: [],
 	},
 	isPaired: { type: Boolean, default: false },
 	notifications: { type: [Object] },
 	roomId: { type: String, default: '' },
 	password: { type: String, required: true },
 	partnerId: { type: String, default: '' },
+	awardableAchievements: {
+		type: [Object],
+		default: [
+			{
+				name: 'Supporter',
+				description: 'Support description to come...',
+				url: '/images/achievements/Supporter.png',
+			},
+			{
+				name: 'Unruly',
+				description: 'Support description to come...',
+				url: '/images/achievements/Unruly.png',
+			},
+		],
+	},
 });
 
 module.exports = mongoose.model('User', userSchema);
