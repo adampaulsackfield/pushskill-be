@@ -15,7 +15,6 @@ const getUsers = async (req, res) => {
 
 const registerUser = async (req, res) => {
 	const { username, password, traits, learningInterests, avatarUrl } = req.body;
-
 	try {
 		if (!username || !password) {
 			throw new Error('missing required fields');
@@ -108,11 +107,14 @@ const loginUser = async (req, res) => {
 };
 
 const patchUserAchievements = async (req, res) => {
-	const { name, description, url } = req.body;
+	const {
+		achievement: { name, description, url },
+		both,
+	} = req.body;
 	const { user_id } = req.params;
 
 	try {
-		if (!name || !description || !url) {
+		if (!name || !description) {
 			throw new Error('missing required fields');
 		}
 
@@ -133,6 +135,14 @@ const patchUserAchievements = async (req, res) => {
 			{ $push: { achievements: achievement } },
 			{ new: true }
 		);
+
+		if (both) {
+			await User.findByIdAndUpdate(
+				{ _id: req.user.id },
+				{ $push: { achievements: achievement } },
+				{ new: true }
+			);
+		}
 
 		if (!user) {
 			throw new Error("User doesn't exist");
@@ -235,62 +245,6 @@ const generateMatches = async (req, res) => {
 	}
 };
 
-const acceptMatch = async (req, res) => {
-	const { user_id } = req.params;
-	const { sender_id } = req.body;
-
-	try {
-		if (!user_id) {
-			throw new Error('User ID is required');
-		}
-
-		const isValidObjId = isValidObjectId(user_id);
-
-		if (!isValidObjId) {
-			throw new Error('User ID is not valid');
-		}
-
-		if (req.user.isPaired) {
-			throw new Error(
-				'You already have a pair, please leave this pairing to join another'
-			);
-		}
-
-		const room = await Room.create({
-			creator: sender_id,
-			member: req.user.id,
-		});
-
-		if (!room) {
-			throw new Error('Something went wrong creating a room');
-		}
-
-		await User.updateMany(
-			{
-				_id: {
-					$in: [
-						mongoose.Types.ObjectId(req.user.id),
-						mongoose.Types.ObjectId(sender_id),
-					],
-				},
-			},
-			{ $set: { isPaired: true } }
-		);
-
-		await User.findByIdAndUpdate(req.user.id, { $set: { roomId: room.id } });
-		await User.findByIdAndUpdate(sender_id, { $set: { roomId: room.id } });
-		await User.findByIdAndUpdate(req.user.id, { $set: { notifications: [] } });
-
-		res.status(201).send({ room });
-	} catch (error) {
-		if (error.message) {
-			res.status(404).send({ message: error.message });
-		} else {
-			res.status(500).send({ message: 'server error' });
-		}
-	}
-};
-
 const sendMatchRequest = async (req, res) => {
 	const { user_id } = req.params;
 
@@ -343,6 +297,134 @@ const sendMatchRequest = async (req, res) => {
 	}
 };
 
+const acceptMatch = async (req, res) => {
+	const { user_id } = req.params;
+	const { sender_id } = req.body;
+
+	try {
+		if (!user_id) {
+			throw new Error('User ID is required');
+		}
+
+		const isValidObjId = isValidObjectId(user_id);
+
+		if (!isValidObjId) {
+			throw new Error('User ID is not valid');
+		}
+
+		if (req.user.isPaired) {
+			throw new Error(
+				'You already have a pair, please leave this pairing to join another'
+			);
+		}
+
+		const room = await Room.create({
+			creator: sender_id,
+			member: req.user.id,
+		});
+
+		if (!room) {
+			throw new Error('Something went wrong creating a room');
+		}
+
+		await User.updateMany(
+			{
+				_id: {
+					$in: [
+						mongoose.Types.ObjectId(req.user.id),
+						mongoose.Types.ObjectId(sender_id),
+					],
+				},
+			},
+			{ $set: { isPaired: true } }
+		);
+
+		await User.findByIdAndUpdate(req.user.id, { $set: { roomId: room.id } });
+		await User.findByIdAndUpdate(sender_id, { $set: { roomId: room.id } });
+		await User.findByIdAndUpdate(req.user.id, { $set: { notifications: [] } });
+		await User.findByIdAndUpdate(req.user.id, {
+			$set: { partnerId: sender_id },
+		});
+		await User.findByIdAndUpdate(sender_id, {
+			$set: { partnerId: req.user.id },
+		});
+
+		res.status(201).send({ room });
+	} catch (error) {
+		if (error.message) {
+			res.status(404).send({ message: error.message });
+		} else {
+			res.status(500).send({ message: 'server error' });
+		}
+	}
+};
+
+const declineMatch = async (req, res) => {
+	const { user_id } = req.params;
+	const { sender_id } = req.body;
+
+	try {
+		if (!user_id) {
+			throw new Error('User ID is required');
+		}
+
+		const isValidObjId = isValidObjectId(user_id);
+
+		if (!isValidObjId) {
+			throw new Error('User ID is not valid');
+		}
+
+		const user = await User.findById(req.user.id);
+
+		if (!user) {
+			throw new Error('User not found');
+		}
+
+		const updatedNotifications = user.notifications.filter(
+			(notification) => notification.user_id !== sender_id
+		);
+
+		user.notifications = updatedNotifications;
+
+		user.save();
+
+		res.status(200).send({ message: 'Pair declined' });
+	} catch (error) {
+		if (error.message) {
+			res.status(404).send({ message: error.message });
+		} else {
+			res.status(500).send({ message: 'server error' });
+		}
+	}
+};
+
+const addOG = async (req, res) => {
+	const { achievement } = req.body;
+
+	try {
+		if (!achievement) {
+			throw new Error('Achievement is required');
+		}
+
+		await User.findByIdAndUpdate(req.user.id, {
+			$push: { achievements: achievement },
+		});
+
+		await User.findByIdAndUpdate(req.user.id, { $set: { isOg: true } });
+		await User.findByIdAndUpdate(req.user.id, {
+			$set: { awardableAchievements: [] },
+		}); // TODO this is a hack and we should remove the achievement that has been awarded
+
+		res.status(200).send({ message: 'Achievement OG Earned' });
+	} catch (error) {
+		if (error.message) {
+			res.status(404).send({ message: error.message });
+		} else {
+			res.status(500).send({ message: 'server error' });
+		}
+	}
+};
+
 module.exports = {
 	getUsers,
 	registerUser,
@@ -353,4 +435,6 @@ module.exports = {
 	generateMatches,
 	sendMatchRequest,
 	acceptMatch,
+	declineMatch,
+	addOG,
 };
