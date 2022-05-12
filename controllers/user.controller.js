@@ -399,6 +399,31 @@ const declineMatch = async (req, res) => {
 	}
 };
 
+const addOG = async (req, res) => {
+	const { achievement } = req.body;
+
+	console.log('running og');
+
+	try {
+		if (!achievement) {
+			throw new Error('Achievement is required');
+		}
+
+		await User.findByIdAndUpdate(req.user.id, {
+			$push: { achievements: achievement },
+		});
+		await USER.findByIdAndUpdate(req.body.user, { $set: { isOg: true } });
+
+		res.status(200).send({ message: 'Achievement OG Earned' });
+	} catch (error) {
+		if (error.message) {
+			res.status(404).send({ message: error.message });
+		} else {
+			res.status(500).send({ message: 'server error' });
+		}
+	}
+};
+
 module.exports = {
 	getUsers,
 	registerUser,
@@ -410,4 +435,5 @@ module.exports = {
 	sendMatchRequest,
 	acceptMatch,
 	declineMatch,
+	addOG,
 };

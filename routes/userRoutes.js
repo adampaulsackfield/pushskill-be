@@ -9,6 +9,7 @@ const {
 	sendMatchRequest,
 	acceptMatch,
 	declineMatch,
+	addOG,
 } = require('../controllers/user.controller');
 
 const protectedRoute = require('../middleware/authMiddleware');
@@ -28,6 +29,8 @@ userRouter
 userRouter
 	.route('/matches/:user_id/decline')
 	.patch(protectedRoute, declineMatch);
+
+userRouter.route('/achievements').patch(protectedRoute, addOG);
 
 userRouter.route('/:user_id').get(protectedRoute, getSingleUser);
 
