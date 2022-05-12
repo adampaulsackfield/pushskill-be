@@ -15,7 +15,6 @@ const getUsers = async (req, res) => {
 
 const registerUser = async (req, res) => {
 	const { username, password, traits, learningInterests, avatarUrl } = req.body;
-
 	try {
 		if (!username || !password) {
 			throw new Error('missing required fields');
@@ -412,7 +411,7 @@ const addOG = async (req, res) => {
 		await User.findByIdAndUpdate(req.user.id, {
 			$push: { achievements: achievement },
 		});
-		await USER.findByIdAndUpdate(req.body.user, { $set: { isOg: true } });
+		await User.findByIdAndUpdate(req.body.user, { $set: { isOg: true } });
 
 		res.status(200).send({ message: 'Achievement OG Earned' });
 	} catch (error) {
