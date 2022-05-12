@@ -409,8 +409,9 @@ const addOG = async (req, res) => {
 		await User.findByIdAndUpdate(req.user.id, {
 			$push: { achievements: achievement },
 		});
-		await User.findByIdAndUpdate(req.body.user, { $set: { isOg: true } });
-		await User.findByIdAndUpdate(req.body.user, {
+
+		await User.findByIdAndUpdate(req.user.id, { $set: { isOg: true } });
+		await User.findByIdAndUpdate(req.user.id, {
 			$set: { awardableAchievements: [] },
 		}); // TODO this is a hack and we should remove the achievement that has been awarded
 
