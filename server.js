@@ -8,7 +8,7 @@ const { createMessageAction } = require('./actions/message.action');
 const server = http.createServer(app);
 const io = new Server(server, {
 	cors: {
-		origin: 'http://localhost:3000',
+		origin: 'https://pushskill.netlify.app',
 		methods: ['GET', 'POST'],
 	},
 });
@@ -17,9 +17,6 @@ server.listen(PORT);
 
 // Initial connection from the a client
 io.on('connection', (socket) => {
-	const messages = [];
-	const userToken = null;
-
 	console.log('Connected to socket.io...');
 
 	socket.on('join_room', ({ room_id }) => {
@@ -74,9 +71,6 @@ io.on('connection', (socket) => {
 				.catch((err) => {
 					console.log(err);
 				});
-
-			// console.log('socketID: ', socket.id);
-			// socket.to(room_id).emit('receive_message', newMsg);
 		}
 	);
 
