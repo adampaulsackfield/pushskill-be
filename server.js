@@ -8,8 +8,7 @@ const { createMessageAction } = require('./actions/message.action');
 const server = http.createServer(app);
 const io = new Server(server, {
 	cors: {
-		origin:
-			'https://super-cool-site-by-adam-adamsackfield-uk-884f2.netlify.app/',
+		origin: 'https://pushskillfe.netlify.app/',
 		methods: ['GET', 'POST'],
 	},
 });
